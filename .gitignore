@@ -1,24 +1,40 @@
-# Compiled class file
-*.class
+# Ignore everything by default
+*
 
-# Log file
-*.log
+# Include root config and metadata files
+!/.gitignore
+!/build.gradle.kts
+!/settings.gradle.kts
+!/gradle.properties
+!/REQUIREMENTS.md
+!/README.md
+!/LICENSE
+!/CONTRIBUTORS.md
+!/CODE_OF_CONDUCT.md
+!/SECURITY.md
 
-# BlueJ files
-*.ctxt
+# Project folders
+!/backend/
+!/backend/**
+!/frontend/
+!/frontend/**
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# Build artifacts and caches within modules
+**/build/
+**/.gradle/
+**/.kotlin/
+**/.DS_Store/
+**/node_modules/
+**/.output/
+**/.vinxi/
+**/.nitro/
+**/bin/
+**/*.class
+**/*.jar
+**/*.lock
+**/*.log
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+# Gradle 
+!**/gradle/
+!**/gradle/**
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
