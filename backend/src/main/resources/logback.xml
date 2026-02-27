@@ -1,11 +1,42 @@
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n</pattern>
-        </encoder>
-    </appender>
+  <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+  <property name="APP_NAME" value="app" />
+  <property name="PATTERN"
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS XXX}|%thread|%-5level|%logger{1}|%msg%n" />
+  <property name="PATTERN_CONSOLE"
+    value="%highlight(${PATTERN}){ERROR=red, WARN=yellow, INFO=white, DEBUG=green, TRACE=cyan}" />
+  <property name="LOG_DIR" value="logs/" />
+  <property name="FILE_NAME" value="${LOG_DIR}/${APP_NAME}.log" />
+  <property name="FILE_SIZE" value="100MB" />
+  <property name="TOTAL_SIZE" value="1GB" />
 
-    <root level="info">
-        <appender-ref ref="STDOUT" />
-    </root>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${PATTERN_CONSOLE}</pattern>
+    </encoder>
+  </appender>
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${FILE_NAME}</file>
+    <encoder>
+      <pattern>${PATTERN}</pattern>
+    </encoder>
+    <rollingPolicy class="com.example.todo.logging.CustomRollingPolicy">
+      <maxFileSize>${FILE_SIZE}</maxFileSize>
+      <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
+      <uncompressedFileCount>3</uncompressedFileCount>
+    </rollingPolicy>
+  </appender>
+  <appender name="CONSOLE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="CONSOLE" />
+  </appender>
+  <appender name="FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="FILE" />
+  </appender>
+
+  <logger name="com.example.todo" level="TRACE" />
+
+  <root level="WARN">
+    <appender-ref ref="CONSOLE_ASYNC" />
+    <appender-ref ref="FILE_ASYNC" />
+  </root>
 </configuration>

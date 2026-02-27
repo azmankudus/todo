@@ -1,5 +1,4 @@
 import { defineConfig } from "@solidjs/start/config";
-import tailwindcss from "@tailwindcss/vite";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,7 +13,9 @@ try {
     const fileContent = fs.readFileSync(propsPath, "utf-8");
     fileContent.split("\n").forEach((line: string) => {
       const parts = line.split("=");
-      if (parts.length >= 2) backendProps[parts[0].trim()] = parts.slice(1).join("=").trim();
+      if (parts.length >= 2) {
+        backendProps[parts[0].trim()] = parts.slice(1).join("=").trim();
+      }
     });
   }
 } catch (e) { }
@@ -22,42 +23,32 @@ try {
 const contextPath = backendProps["micronaut.server.context-path"] || "";
 const cleanContextPath = contextPath === "/" ? "" : contextPath.replace(/\/$/, "");
 
-const isDev = process.argv.includes("dev") || process.env.NODE_ENV === "development";
-
 // @ts-ignore
 const basePath = process.env.VITE_BASE_URL || `${cleanContextPath}/ui`;
 // @ts-ignore
-const realApiPath = process.env.VITE_API_URL || `${cleanContextPath}/api`;
-const proxyApiPath = isDev ? `${basePath}/api-proxy` : realApiPath;
+const apiPath = process.env.VITE_API_URL || `${cleanContextPath}/api`;
 
 export default defineConfig({
   ssr: false,
   vite: {
-    plugins: [
-      tailwindcss()
-    ],
+    // Explicitly configure Vite's base for SSR layout boundaries
     define: {
-      "import.meta.env.VITE_API_URL": JSON.stringify(proxyApiPath),
+      "import.meta.env.VITE_API_URL": JSON.stringify(apiPath),
       "import.meta.env.VITE_BASE_URL": JSON.stringify(basePath)
-    },
-    build: {
-      minify: "esbuild", // Explicitly ensure minification is enabled
-      cssMinify: true,
-      sourcemap: false, // Disable sourcemaps for smaller production assets
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            "vendor": ["solid-js", "@solidjs/router", "lucide-solid"]
-          }
-        }
-      }
     }
   },
   server: {
     preset: "static",
-    baseURL: basePath,
-    routeRules: isDev ? {
-      [`${proxyApiPath}/**`]: { proxy: "http://localhost:8080" + realApiPath + "/**" }
-    } : {}
+    baseURL: cleanContextPath || "/", // Root Nitro at the backend API's mount point (e.g. /todo)
+    routeRules: {
+      // Map Solid routing fallbacks since root Nitro is tracking here
+      [basePath + "/**"]: { index: true }, 
+    },
+    proxy: {
+      [apiPath]: {
+        target: "http://localhost:8080" + apiPath, // Proxy over to the identical backend mapping
+        changeOrigin: true
+      }
+    }
   }
 });

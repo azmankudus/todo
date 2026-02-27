@@ -1,6 +1,8 @@
 [versions]
-plugin-micronaut = "4.6.1"
+plugin-micronaut = "4.6.2"
 plugin-shadow = "8.3.9"
+duckdb = "1.4.4.0"
+flyway-duckdb = "10.24.0"
 
 [libraries]
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
@@ -9,9 +11,22 @@ micronaut-http-client = { module = "io.micronaut:micronaut-http-client" }
 micronaut-http-validation = { module = "io.micronaut:micronaut-http-validation" }
 micronaut-serde-jackson = { module = "io.micronaut.serde:micronaut-serde-jackson" }
 micronaut-serde-processor = { module = "io.micronaut.serde:micronaut-serde-processor" }
+micronaut-validation = { module = "io.micronaut.validation:micronaut-validation" }
+micronaut-validation-processor = { module = "io.micronaut.validation:micronaut-validation-processor" }
+duckdb-jdbc = { module = "org.duckdb:duckdb_jdbc", version.ref = "duckdb" }
+micronaut-data-jdbc = { module = "io.micronaut.data:micronaut-data-jdbc" }
+micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processor" }
+micronaut-jdbc-hikari = { module = "io.micronaut.sql:micronaut-jdbc-hikari" }
+micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway" }
+flyway-core = { module = "org.flywaydb:flyway-core" }
+flyway-database-duckdb = { module = "org.flywaydb:flyway-database-duckdb", version.ref = "flyway-duckdb" }
+micronaut-management = { module = "io.micronaut:micronaut-management" }
+micronaut-openapi-annotations = { module = "io.micronaut.openapi:micronaut-openapi-annotations" }
+micronaut-openapi-processor = { module = "io.micronaut.openapi:micronaut-openapi" }
+micronaut-tracing-opentelemetry-http = { module = "io.micronaut.tracing:micronaut-tracing-opentelemetry-http" }
+opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
 
 [plugins]
 micronaut-application = { id = "io.micronaut.application", version.ref = "plugin-micronaut" }
 micronaut-aot = { id = "io.micronaut.aot", version.ref = "plugin-micronaut" }
 shadow = { id = "com.gradleup.shadow", version.ref = "plugin-shadow" }
-

@@ -33,6 +33,11 @@
 **/*.jar
 **/*.lock
 **/*.log
+**/*.log.zip
+**/*.db
+**/*.tmp
+**/*.bkp
+**/*.bak
 
 # Gradle 
 !**/gradle/
