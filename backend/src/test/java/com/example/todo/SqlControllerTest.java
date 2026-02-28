@@ -18,7 +18,7 @@ class SqlControllerTest {
 
   @Test
   void testExecuteQuerySelect() {
-    SqlController.SqlQueryRequest req = new SqlController.SqlQueryRequest("SELECT 1 as num");
+    SqlController.SqlQueryRequest req = new SqlController.SqlQueryRequest("SELECT 1 as num", null, null);
     SqlController.SqlResult result = client.toBlocking().retrieve(HttpRequest.POST("/", req),
         SqlController.SqlResult.class);
 
@@ -33,7 +33,7 @@ class SqlControllerTest {
   @Test
   void testExecuteQueryUpdate() {
     SqlController.SqlQueryRequest req = new SqlController.SqlQueryRequest(
-        "CREATE TABLE if not exists test_table (id INTEGER)");
+        "CREATE TABLE if not exists test_table (id INTEGER)", null, null);
     SqlController.SqlResult result = client.toBlocking().retrieve(HttpRequest.POST("/", req),
         SqlController.SqlResult.class);
 
@@ -41,7 +41,8 @@ class SqlControllerTest {
     assertEquals(1, result.columns().size());
     assertEquals("rowsAffected", result.columns().get(0));
 
-    SqlController.SqlQueryRequest insertReq = new SqlController.SqlQueryRequest("INSERT INTO test_table VALUES (1)");
+    SqlController.SqlQueryRequest insertReq = new SqlController.SqlQueryRequest("INSERT INTO test_table VALUES (1)",
+        null, null);
     SqlController.SqlResult insertResult = client.toBlocking().retrieve(HttpRequest.POST("/", insertReq),
         SqlController.SqlResult.class);
     assertTrue(insertResult.success());
@@ -49,7 +50,8 @@ class SqlControllerTest {
 
   @Test
   void testExecuteQueryError() {
-    SqlController.SqlQueryRequest req = new SqlController.SqlQueryRequest("SELECT * FROM non_existent_table");
+    SqlController.SqlQueryRequest req = new SqlController.SqlQueryRequest("SELECT * FROM non_existent_table", null,
+        null);
     SqlController.SqlResult result = client.toBlocking().retrieve(HttpRequest.POST("/", req),
         SqlController.SqlResult.class);
 

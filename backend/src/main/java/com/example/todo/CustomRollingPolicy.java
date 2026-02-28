@@ -1,4 +1,4 @@
-package com.example.todo.logging;
+package com.example.todo;
 
 import ch.qos.logback.core.rolling.RollingPolicyBase;
 import ch.qos.logback.core.rolling.TriggeringPolicy;

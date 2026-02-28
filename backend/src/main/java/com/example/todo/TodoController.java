@@ -5,6 +5,7 @@ import io.micronaut.http.annotation.*;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -51,16 +52,23 @@ public class TodoController {
     }
     var existing = repository.findById(id).orElse(null);
     if (existing != null) {
-      Todo updated = new Todo(existing.id(), todo.title(), todo.completed(), existing.createdAt());
+      OffsetDateTime completedAt = null;
+      if (todo.completed()) {
+        completedAt = existing.completedAt() != null ? existing.completedAt() : OffsetDateTime.now();
+      }
+
+      Todo updated = new Todo(existing.id(), todo.title(), todo.completed(), todo.priority(), existing.createdAt(),
+          completedAt);
       if (log.isTraceEnabled()) {
-        log.trace("Updated todo with id: {}. New status: {}", updated.id(), updated.completed());
+        log.trace("Updated todo with id: {}. completed: {}, completedAt: {}", updated.id(), updated.completed(),
+            updated.completedAt());
       }
       return repository.update(updated);
     }
     if (log.isTraceEnabled()) {
       log.trace("Todo with id: {} not found for update", id);
     }
-    return null; // Return 404 ideally
+    return null;
   }
 
   @Delete("/{id}")

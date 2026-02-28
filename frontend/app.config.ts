@@ -43,14 +43,7 @@ export default defineConfig({
     build: {
       minify: "esbuild", // Explicitly ensure minification is enabled
       cssMinify: true,
-      sourcemap: false, // Disable sourcemaps for smaller production assets
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            "vendor": ["solid-js", "@solidjs/router", "lucide-solid"]
-          }
-        }
-      }
+      sourcemap: false // Disable sourcemaps for smaller production assets
     }
   },
   server: {

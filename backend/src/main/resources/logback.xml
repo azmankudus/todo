@@ -7,8 +7,8 @@
     value="%highlight(${PATTERN}){ERROR=red, WARN=yellow, INFO=white, DEBUG=green, TRACE=cyan}" />
   <property name="LOG_DIR" value="logs/" />
   <property name="FILE_NAME" value="${LOG_DIR}/${APP_NAME}.log" />
-  <property name="FILE_SIZE" value="100MB" />
-  <property name="TOTAL_SIZE" value="1GB" />
+  <property name="FILE_SIZE" value="5MB" />
+  <property name="TOTAL_SIZE" value="30MB" />
 
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
@@ -35,7 +35,7 @@
 
   <logger name="com.example.todo" level="TRACE" />
 
-  <root level="WARN">
+  <root level="DEBUG">
     <appender-ref ref="CONSOLE_ASYNC" />
     <appender-ref ref="FILE_ASYNC" />
   </root>

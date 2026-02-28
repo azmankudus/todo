@@ -25,7 +25,7 @@ class TodoControllerTest {
 
   @Test
   void testCreateTodo() {
-    Todo todo = new Todo(null, "Create Task", false, null);
+    Todo todo = new Todo(null, "Create Task", false, 0, null, null);
     Todo created = client.toBlocking().retrieve(HttpRequest.POST("/", todo), Todo.class);
 
     assertNotNull(created);
@@ -35,7 +35,7 @@ class TodoControllerTest {
 
   @Test
   void testListTodos() {
-    Todo todo = new Todo(null, "List Task", false, null);
+    Todo todo = new Todo(null, "List Task", false, 0, null, null);
     client.toBlocking().retrieve(HttpRequest.POST("/", todo), Todo.class);
 
     List<Todo> list = client.toBlocking().retrieve(HttpRequest.GET("/"),
@@ -45,10 +45,10 @@ class TodoControllerTest {
 
   @Test
   void testUpdateTodo() {
-    Todo todo = new Todo(null, "Test Task", false, null);
+    Todo todo = new Todo(null, "Test Task", false, 0, null, null);
     Todo created = client.toBlocking().retrieve(HttpRequest.POST("/", todo), Todo.class);
 
-    Todo updateReq = new Todo(created.id(), "Updated Task", true, created.createdAt());
+    Todo updateReq = new Todo(created.id(), "Updated Task", true, 0, created.createdAt(), null);
     Todo updated = client.toBlocking().retrieve(HttpRequest.PUT("/" + created.id(), updateReq), Todo.class);
 
     assertEquals("Updated Task", updated.title());
@@ -57,7 +57,7 @@ class TodoControllerTest {
 
   @Test
   void testValidation() {
-    Todo invalidTodo = new Todo(null, "", false, null);
+    Todo invalidTodo = new Todo(null, "", false, 0, null, null);
     assertThrows(HttpClientResponseException.class, () -> {
       client.toBlocking().exchange(HttpRequest.POST("/", invalidTodo));
     });
@@ -65,7 +65,7 @@ class TodoControllerTest {
 
   @Test
   void testDeleteTodo() {
-    Todo todo = new Todo(null, "Delete Task", false, null);
+    Todo todo = new Todo(null, "Delete Task", false, 0, null, null);
     Todo created = client.toBlocking().retrieve(HttpRequest.POST("/", todo), Todo.class);
 
     client.toBlocking().exchange(HttpRequest.DELETE("/" + created.id()));

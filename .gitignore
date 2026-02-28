@@ -14,6 +14,8 @@
 !/SECURITY.md
 
 # Project folders
+!/.agent/
+!/.agent/**
 !/backend/
 !/backend/**
 !/frontend/
@@ -34,6 +36,7 @@
 **/*.lock
 **/*.log
 **/*.log.zip
+**/*.log.gz
 **/*.db
 **/*.tmp
 **/*.bkp

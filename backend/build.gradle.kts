@@ -90,24 +90,8 @@ val buildFrontend = tasks.register<Exec>("buildFrontend") {
   group = "frontend"
   description = "Build the frontend application"
   workingDir = frontendDir
-  
-  // Inject context path into frontend build dynamically
-  val props = Properties()
-  val propsFile = file("src/main/resources/application.properties")
-  if (propsFile.exists()) {
-      props.load(propsFile.inputStream())
-  }
-  val contextPath = props.getProperty("micronaut.server.context-path", "")
-  val cleanContextPath = if (contextPath == "/") "" else contextPath.removeSuffix("/")
-
-  environment("VITE_BASE_URL", "$cleanContextPath/ui")
-  environment("VITE_API_URL", "$cleanContextPath/api")
-  
+  commandLine("bun", "install")
   commandLine("bun", "run", "build")
-  inputs.dir(frontendDir.resolve("src"))
-  inputs.file(frontendDir.resolve("package.json"))
-  inputs.file(frontendDir.resolve("bun.lock"))
-  outputs.dir(frontendDir.resolve(".output/public"))
 }
 
 val copyFrontendResources = tasks.register<Copy>("copyFrontendResources") {
@@ -115,14 +99,10 @@ val copyFrontendResources = tasks.register<Copy>("copyFrontendResources") {
   description = "Copy the frontend resources to backends public dir"
   dependsOn(buildFrontend)
   from(frontendDir.resolve(".output/public"))
-  into(layout.buildDirectory.dir("resources/main/public/ui")) // Put inside built resources nested at /ui
+  into(layout.buildDirectory.dir("resources/main/public/ui"))
 }
 
 tasks.named("processResources") {
-  finalizedBy(copyFrontendResources)
-}
-
-tasks.matching { it.name == "buildLayers" || it.name == "classes" || it.name == "shadowJar" }.configureEach {
   dependsOn(copyFrontendResources)
 }
 

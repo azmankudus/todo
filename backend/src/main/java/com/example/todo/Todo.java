@@ -5,7 +5,8 @@ import io.micronaut.data.annotation.MappedEntity;
 import io.micronaut.serde.annotation.Serdeable;
 
 import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
+import io.micronaut.core.annotation.Nullable;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Serdeable
@@ -14,13 +15,15 @@ public record Todo(
     @Id String id,
     @NotBlank String title,
     boolean completed,
-    LocalDateTime createdAt) {
+    int priority,
+    OffsetDateTime createdAt,
+    @Nullable OffsetDateTime completedAt) {
   public Todo {
     if (id == null) {
       id = UUID.randomUUID().toString();
     }
     if (createdAt == null) {
-      createdAt = LocalDateTime.now();
+      createdAt = OffsetDateTime.now();
     }
   }
 }

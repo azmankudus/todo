@@ -21,7 +21,14 @@ public interface TodoRepository extends CrudRepository<Todo, String> {
   @Transactional
   boolean existsById(String id);
 
+  @Transactional
+  long count();
+
   @SuppressWarnings("unchecked")
-  @Query("INSERT INTO todo (id, title, completed, created_at) VALUES (:id, :title, :completed, :createdAt) RETURNING *")
+  @Query("INSERT INTO todo (id, title, completed, priority, created_at, completed_at) VALUES (:id, :title, :completed, :priority, :createdAt, :completedAt) RETURNING *")
   Todo save(Todo entity);
+
+  @SuppressWarnings("unchecked")
+  @Query("UPDATE todo SET title = :title, completed = :completed, priority = :priority, completed_at = :completedAt WHERE id = :id RETURNING *")
+  Todo update(Todo entity);
 }
