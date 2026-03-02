@@ -1,4 +1,4 @@
-# Todo Vibe
+# TodoVibe
 
 A full-stack task management application with SQL explorer.
 

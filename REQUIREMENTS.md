@@ -54,10 +54,10 @@ micronaut-security-jwt = { module = "io.micronaut.security:micronaut-security-jw
 - Use `data-index` attribute pattern for staggered animations
 
 ### 5. LocalStorage Keys
-All localStorage keys must use `getStorageKey()` from `config.ts` to ensure proper prefixing.
+All localStorage keys must use `getStorageKey()` from `src/config.ts` to ensure proper prefixing.
 
 ### 6. API Interaction Standard
-- **Centralized Client**: **NEVER** use `fetch` directly. **ALWAYS** use `apiClient` from `src/utils/api.ts`.
+- **Centralized Client**: **NEVER** use `fetch` directly. **ALWAYS** use `apiClient` from `src/shared/utils/api.ts`.
 - **Response Structure**: All endpoints must return the `ApiResponse` format:
   ```typescript
   export interface ApiResponse {

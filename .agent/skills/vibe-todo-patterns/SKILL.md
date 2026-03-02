@@ -66,9 +66,9 @@ public class TodoController {
 ## Frontend Patterns (SolidJS)
 
 ### 1. Global State Management
-- **Layout State**: Use `layoutStore.ts` for global UI toggles (`isWideMode`)
-- **Loading State**: Use `loadingStore.ts` via `showLoading(id, msg)` and `hideLoading()`
-- **LocalStorage**: All keys must use `getStorageKey()` from `config.ts`
+- **Layout State**: Use `src/shared/stores/layoutStore.ts` for global UI toggles (`isWideMode`)
+- **Loading State**: Use `src/shared/stores/loadingStore.ts` via `showLoading(id, msg)` and `hideLoading()`
+- **LocalStorage**: All keys must use `getStorageKey()` from `src/config.ts`
 
 ```typescript
 // CORRECT
@@ -78,7 +78,7 @@ localStorage.setItem(getStorageKey('theme'), theme);
 localStorage.setItem('theme', theme);
 ```
 
-- **Authentication State**: To avoid circular dependencies with `apiClient`, extract core auth state (`user`, `accessToken`, `refreshToken`) and headers (`getAuthHeaders`) into `authBase.ts`. `authStore.ts` should import from `authBase.ts` and handle high-level logic (login/logout).
+- **Authentication State**: To avoid circular dependencies with `apiClient`, extract core auth state (`user`, `accessToken`, `refreshToken`) and headers (`getAuthHeaders`) into `src/shared/stores/authBase.ts`. `src/shared/stores/authStore.ts` should import from `authBase.ts` and handle high-level logic (login/logout).
 
 ### 2. Component Design
 - **Theme Selection**: Use custom `ThemeDropdown` in Navigation.tsx (not native `<select>`)
@@ -146,7 +146,7 @@ interface SqlResult {
 Frontend uses `columnTypes` to format cells (e.g., TimestampTooltip for timestamps).
 
 ### 2. Centralized `apiClient`
-**ALWAYS** use the centralized `apiClient` from `src/utils/api.ts` for all network requests.
+**ALWAYS** use the centralized `apiClient` from `src/shared/utils/api.ts` for all network requests.
 
 ```typescript
 // Standard usage
@@ -162,7 +162,7 @@ if (data.status === ApiStatus.SUCCESS) {
 
 It automatically handles:
 - Base URL (`VITE_API_URL`)
-- Authorization headers from `authBase.ts`
+- Authorization headers from `src/shared/stores/authBase.ts`
 - Standardized JSON parsing with fallbacks
 - `ApiResponse` structure validation
 
@@ -188,15 +188,15 @@ Use `DataModal.tsx` for displaying detailed record information.
 
 ## File Locations Quick Reference
 
-| Item | Path |
-|------|------|
 | Main entry | `backend/src/main/java/com/example/todo/Main.java` |
-| Controllers | `backend/src/main/java/com/example/todo/*Controller.java` |
+| Modules | `backend/src/main/java/com/example/todo/modules/[module]/` |
+| Shared (BE) | `backend/src/main/java/com/example/todo/shared/` |
 | Migrations | `backend/src/main/resources/db/migration/V*.sql` |
 | Frontend routes | `frontend/src/routes/*.tsx` |
-| UI components | `frontend/src/components/ui/*.tsx` |
-| Animations | `frontend/src/components/animations/*.tsx` |
-| Stores | `frontend/src/stores/*.ts` |
+| Modules (FE) | `frontend/src/modules/[module]/` |
+| UI components | `frontend/src/shared/components/ui/*.tsx` |
+| Animations | `frontend/src/shared/components/animations/*.tsx` |
+| Stores | `frontend/src/shared/stores/*.ts` |
 | Themes | `frontend/src/styles/themes/*.css` |
 
 ## Routes
