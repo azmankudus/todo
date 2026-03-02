@@ -1,14 +1,14 @@
 import { JSX, splitProps } from "solid-js";
 import { Motion } from "solid-motionone";
 
-export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface TextButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "solid" | "ghost" | "danger" | "soft" | "outline";
   size?: "sm" | "md" | "lg";
   icon?: JSX.Element;
   iconOnly?: boolean;
 }
 
-export function Button(props: ButtonProps) {
+export function TextButton(props: TextButtonProps) {
   const [local, others] = splitProps(props, ["class", "variant", "size", "children", "icon", "iconOnly"]);
 
   const baseStyles = "inline-flex justify-center items-center font-medium rounded-lg disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 group cursor-pointer relative overflow-hidden";
@@ -43,18 +43,12 @@ export function Button(props: ButtonProps) {
     danger: "bg-red-500 text-white"
   };
 
-  // Icon box width per size (matches button height for a square shape)
-  const iconWidth: Record<string, string> = {
-    sm: "group-hover:w-8",
-    md: "group-hover:w-10",
-    lg: "group-hover:w-12"
-  };
-
-  // Text shift per size (exactly half the icon width to maintain centering in remaining space)
+  // Text shift to maintain centering in the remaining space
+  // This is roughly half of the button's height (which is what the icon width will be)
   const textShift: Record<string, string> = {
-    sm: "group-hover:-translate-x-4",
-    md: "group-hover:-translate-x-5",
-    lg: "group-hover:-translate-x-6"
+    sm: "group-hover:-translate-x-4", // 16px shift for ~32px icon
+    md: "group-hover:-translate-x-5", // 20px shift for ~40px icon
+    lg: "group-hover:-translate-x-6"  // 24px shift for ~48px icon
   };
 
   const v = () => local.variant || "solid";
@@ -80,9 +74,9 @@ export function Button(props: ButtonProps) {
           <span class={`inline-flex items-center justify-center gap-x-2 relative z-10 transition-transform duration-300 ease-out ${textShift[s()]}`}>
             {local.children}
           </span>
-          {/* Icon box — absolutely positioned on right, grows width from 0 to fill */}
+          {/* Icon box — full height, square proportion, flush against right edge */}
           <span
-            class={`absolute right-0 inset-y-0 flex items-center justify-center w-0 ${iconWidth[s()]} opacity-0 group-hover:opacity-100 ${iconBg[v()]} transition-[width,opacity] duration-300 ease-out overflow-hidden rounded-l-lg`}
+            class={`absolute right-0 inset-y-0 aspect-square flex items-center justify-center translate-x-full group-hover:translate-x-0 opacity-0 group-hover:opacity-100 ${iconBg[v()]} transition-all duration-300 ease-out overflow-hidden rounded-l-lg`}
           >
             {local.icon}
           </span>

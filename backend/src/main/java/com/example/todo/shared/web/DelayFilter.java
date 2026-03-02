@@ -14,6 +14,7 @@ import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.core.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.Duration;
 import reactor.core.publisher.Mono;
 
 @Filter("/**")
@@ -28,7 +29,7 @@ public class DelayFilter implements HttpServerFilter {
 
   public DelayFilter(@Property(name = "application.delay.duration") @Nullable Long delayDuration,
       @Value("${micronaut.server.context-path:/}") String contextPath) {
-    this.delayDuration = delayDuration != null ? delayDuration : 3000L;
+    this.delayDuration = delayDuration != null ? delayDuration : 3L;
     this.contextPath = contextPath;
     logger.info("Delay filter enabled with duration: {}ms", this.delayDuration);
   }
@@ -44,7 +45,7 @@ public class DelayFilter implements HttpServerFilter {
 
     logger.info("Applying artificial delay of {}ms to request: {}", delayDuration, path);
 
-    return Mono.delay(java.time.Duration.ofMillis(delayDuration))
+    return Mono.delay(Duration.ofSeconds(delayDuration))
         .flatMap(d -> Mono.from(chain.proceed(request)));
   }
 }

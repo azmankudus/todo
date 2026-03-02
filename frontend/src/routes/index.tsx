@@ -1,7 +1,7 @@
 import { A } from "@solidjs/router";
 import { TbOutlineSquareCheck, TbOutlineDatabase, TbOutlineArrowRight, TbOutlineSun } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
-import { Button } from "../components/ui/Button";
+import { TextButton } from "../components/ui/TextButton";
 
 export default function Home() {
   return (
@@ -29,14 +29,14 @@ export default function Home() {
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <A href="/todo">
-            <Button size="lg" class="px-8 shadow-lg shadow-primary-500/30 bg-gradient-to-r from-primary-600 to-secondary-500 border-0" icon={<TbOutlineArrowRight size={20} />}>
+            <TextButton size="lg" class="px-8 shadow-lg shadow-primary-500/30 bg-gradient-to-r from-primary-600 to-secondary-500 border-0" icon={<TbOutlineArrowRight size={20} />}>
               Get Started
-            </Button>
+            </TextButton>
           </A>
           <A href="/sql">
-            <Button variant="outline" size="lg" class="px-8 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" icon={<TbOutlineDatabase size={20} />}>
+            <TextButton variant="outline" size="lg" class="px-8 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" icon={<TbOutlineDatabase size={20} />}>
               SQL Explorer
-            </Button>
+            </TextButton>
           </A>
         </div>
       </Motion.div>

@@ -4,7 +4,7 @@ import { createStore, reconcile } from "solid-js/store";
 import { TbOutlineTrash, TbOutlinePlus } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
 import { TransitionGroup } from "solid-transition-group";
-import { Button } from "../components/ui/Button";
+import { TextButton } from "../components/ui/TextButton";
 import { TextField } from "../components/ui/TextField";
 import { Checkbox } from "../components/ui/Checkbox";
 import { PrioritySelect, PriorityBadge } from "../components/ui/Priority";
@@ -133,9 +133,9 @@ export default function TodoPage() {
             class="focus:ring-2 focus:ring-primary-500 dark:bg-slate-800 dark:text-white"
           />
           <PrioritySelect value={priorityValue()} onChange={setPriorityValue} />
-          <Button type="submit" variant="solid" class="px-6 shrink-0 shadow-md" icon={<TbOutlinePlus size={20} />}>
+          <TextButton type="submit" variant="solid" class="px-6 shrink-0 shadow-md" icon={<TbOutlinePlus size={20} />}>
             Add
-          </Button>
+          </TextButton>
         </Motion.form>
 
         <Show when={isLoading()}>

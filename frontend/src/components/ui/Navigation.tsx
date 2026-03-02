@@ -4,7 +4,8 @@ import { A, useLocation } from "@solidjs/router";
 import { TbOutlineMenu2, TbOutlineX, TbOutlineSquareCheck, TbOutlineSun, TbOutlineMoon, TbOutlinePalette, TbOutlinePhoto as ImageIcon, TbOutlineMaximize, TbOutlineMinimize, TbOutlineArrowRight, TbOutlineLogout } from "solid-icons/tb";
 import { isWideMode, toggleWideMode } from "../../stores/layoutStore";
 import { user, logout, User } from "../../stores/authStore";
-import { Button } from "./Button";
+import { TextButton } from "./TextButton";
+import { IconButton } from "./IconButton";
 import { Motion } from "solid-motionone";
 
 export interface NavItem {
@@ -89,15 +90,14 @@ function ThemeDropdown(props: { type: "color" | "bg"; icon: JSX.Element; value: 
 
   return (
     <>
-      <button
-        type="button"
+      <IconButton
         ref={btnRef!}
+        icon={props.icon}
         onClick={openDropdown}
-        class="inline-flex items-center justify-center p-2 text-gray-500 rounded-xl dark:text-gray-400 cursor-pointer transition-all duration-200 hover:scale-125 hover:shadow-lg hover:text-primary-500 dark:hover:text-primary-400"
+        variant="primary"
+        glow
         title={props.title}
-      >
-        {props.icon}
-      </button>
+      />
 
       <Show when={isOpen()}>
         <Portal>
@@ -178,32 +178,28 @@ export function Navigation(props: NavigationProps) {
               options={colorThemes}
               onChange={local.onChangeColorTheme}
             />
-            <Motion.button
+            <IconButton
               onClick={toggleWideMode}
-              hover={{ scale: 1.1 }}
-              press={{ scale: 0.9 }}
-              class="hidden sm:inline-flex items-center justify-center p-2 text-gray-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-gray-400 transition-colors"
+              icon={isWideMode() ? <TbOutlineMinimize size={20} /> : <TbOutlineMaximize size={20} />}
+              variant="primary"
+              glow
               title={isWideMode() ? "Centered View" : "Wide View"}
-            >
-              {isWideMode() ? <TbOutlineMinimize size={20} /> : <TbOutlineMaximize size={20} />}
-            </Motion.button>
-            <Motion.button
+              class="hidden sm:inline-flex"
+            />
+            <IconButton
               onClick={local.onToggleTheme}
-              hover={{ scale: 1.1, rotate: 10 }}
-              press={{ scale: 0.9 }}
-              class="p-2 text-gray-500 rounded-lg dark:text-gray-400 transition-colors"
-            >
-              {local.theme === "dark" ? <TbOutlineSun size={20} /> : <TbOutlineMoon size={20} />}
-            </Motion.button>
-            <Motion.button
+              icon={local.theme === "dark" ? <TbOutlineSun size={20} /> : <TbOutlineMoon size={20} />}
+              variant="primary"
+              glow
+              title={`Switch to ${local.theme === "dark" ? "light" : "dark"} mode`}
+            />
+            <IconButton
               onClick={() => setIsOpen(!isOpen())}
-              hover={{ scale: 1.1 }}
-              press={{ scale: 0.9 }}
-              type="button"
-              class="flex justify-center items-center gap-x-2 w-10 h-10 text-sm font-semibold rounded-xl border border-gray-200 text-gray-800 dark:text-white dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              {isOpen() ? <TbOutlineX size={22} /> : <TbOutlineMenu2 size={22} />}
-            </Motion.button>
+              icon={isOpen() ? <TbOutlineX size={22} /> : <TbOutlineMenu2 size={22} />}
+              variant="outline"
+              glow={false}
+              class="w-10 h-10"
+            />
           </div>
         </div>
 
@@ -257,14 +253,14 @@ export function Navigation(props: NavigationProps) {
             <div class="flex items-center gap-2">
               <Show when={local.user} fallback={
                 <A href="/login">
-                  <Button
+                  <TextButton
                     variant="solid"
                     size="sm"
                     class="rounded-xl px-4"
                     icon={<TbOutlineArrowRight size={16} />}
                   >
                     Sign In
-                  </Button>
+                  </TextButton>
                 </A>
               }>
                 <div class="flex items-center gap-3">
@@ -272,7 +268,7 @@ export function Navigation(props: NavigationProps) {
                     <span class="text-xs font-black text-slate-900 dark:text-gray-100 leading-none mb-0.5">{local.user?.fullname}</span>
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{local.user?.roles?.[0] || 'USER'}</span>
                   </div>
-                  <Button
+                  <TextButton
                     variant="outline"
                     size="sm"
                     class="!rounded-xl !p-2 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-red-500 hover:border-red-500/30 transition-all"
@@ -304,21 +300,21 @@ export function Navigation(props: NavigationProps) {
                 onChange={local.onChangeColorTheme}
               />
 
-              <button
+              <IconButton
                 onClick={toggleWideMode}
-                class="inline-flex items-center justify-center p-2 text-gray-500 rounded-xl dark:text-gray-400 cursor-pointer transition-all duration-200 hover:scale-125 hover:shadow-lg hover:text-primary-500 dark:hover:text-primary-400"
+                icon={isWideMode() ? <TbOutlineMinimize size={18} /> : <TbOutlineMaximize size={18} />}
+                variant="primary"
+                glow
                 title={isWideMode() ? "Centered View" : "Wide View"}
-              >
-                {isWideMode() ? <TbOutlineMinimize size={18} /> : <TbOutlineMaximize size={18} />}
-              </button>
+              />
 
-              <button
+              <IconButton
                 onClick={local.onToggleTheme}
-                class="inline-flex items-center justify-center p-2 text-gray-500 rounded-xl dark:text-gray-400 cursor-pointer transition-all duration-200 hover:scale-125 hover:shadow-lg hover:text-primary-500 dark:hover:text-primary-400"
+                icon={local.theme === "dark" ? <TbOutlineSun size={18} /> : <TbOutlineMoon size={18} />}
+                variant="primary"
+                glow
                 title={`Switch to ${local.theme === "dark" ? "light" : "dark"} mode`}
-              >
-                {local.theme === "dark" ? <TbOutlineSun size={18} /> : <TbOutlineMoon size={18} />}
-              </button>
+              />
             </div>
           </div>
         </div>

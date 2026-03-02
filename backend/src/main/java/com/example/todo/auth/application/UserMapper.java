@@ -5,6 +5,9 @@ import com.example.todo.auth.api.dto.UserInfo;
 import com.example.todo.auth.domain.model.User;
 
 import jakarta.inject.Singleton;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public class UserMapper {
@@ -20,7 +23,7 @@ public class UserMapper {
         request.username(),
         request.fullname(),
         request.password(),
-        java.util.Collections.emptySet());
+        Collections.emptySet());
   }
 
   public UserInfo toUserInfo(User user) {
@@ -28,10 +31,10 @@ public class UserMapper {
       return null;
     }
 
-    java.util.List<String> roleNames = user.roles() != null
+    List<String> roleNames = user.roles() != null
         ? user.roles().stream().map(ur -> ur.role().name())
-            .collect(java.util.stream.Collectors.toList())
-        : java.util.Collections.emptyList();
+            .collect(Collectors.toList())
+        : Collections.emptyList();
 
     return new UserInfo(
         user.id(),

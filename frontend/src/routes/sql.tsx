@@ -1,7 +1,7 @@
 import { createSignal, createEffect, on, Show } from "solid-js";
 import { ApiStatus } from "../domain/shared/ApiStatus";
 import { Presence, Motion } from "solid-motionone";
-import { Button } from "../components/ui/Button";
+import { TextButton } from "../components/ui/TextButton";
 import { DataTable } from "../components/ui/DataTable";
 import { DataModal } from "../components/ui/DataModal";
 import { showLoading, hideLoading } from "../stores/loadingStore";
@@ -128,12 +128,12 @@ export default function SqlPage() {
             />
           </div>
           <div class="flex gap-3 justify-center">
-            <Button type="submit" variant="solid" size="sm" class="shadow-md" disabled={isLoading()} icon={<TbOutlinePlayerPlay size={16} />}>
+            <TextButton type="submit" variant="solid" size="sm" class="shadow-md" disabled={isLoading()} icon={<TbOutlinePlayerPlay size={16} />}>
               {isLoading() ? "Executing..." : "Execute"}
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => { setQuery(''); setResult(null); setErrorResponse(null); }} icon={<TbOutlineEraser size={16} />}>
+            </TextButton>
+            <TextButton type="button" variant="outline" size="sm" onClick={() => { setQuery(''); setResult(null); setErrorResponse(null); }} icon={<TbOutlineEraser size={16} />}>
               Clear
-            </Button>
+            </TextButton>
           </div>
         </Motion.form>
 
@@ -150,7 +150,7 @@ export default function SqlPage() {
                 <TbOutlineAlertCircle size={20} class="mr-2 shrink-0" />
                 <p class="text-sm font-medium">{error()}</p>
               </div>
-              <Button
+              <TextButton
                 variant="outline"
                 size="sm"
                 class="ml-4 h-8 px-4 text-xs font-bold border-red-200 dark:border-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/40 text-red-700 dark:text-red-400 rounded-xl"
@@ -158,7 +158,7 @@ export default function SqlPage() {
                 icon={<TbOutlineTerminal size={14} />}
               >
                 More Info
-              </Button>
+              </TextButton>
             </Motion.div>
           </Show>
         </Presence>

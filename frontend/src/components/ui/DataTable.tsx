@@ -69,15 +69,15 @@ export function DataTable(props: DataTableProps) {
         {/* Horizontal Scrollbar */}
         <div
           id="data-table-top-scrollbar"
-          class="overflow-x-auto custom-scrollbar bg-gray-200/50 dark:bg-slate-700/50"
-          style={{ height: '12px' }}
+          class="overflow-x-auto custom-scrollbar bg-transparent"
+          style={{ height: '8px' }}
           onScroll={(e) => syncScroll((e.currentTarget as HTMLElement).scrollLeft, 'data-table-top-scrollbar')}
         >
           <div style={{ width: `max(${props.columns.length * colWidth()}px, 100%)`, height: '1px' }}></div>
         </div>
 
         {/* Header Row */}
-        <div class="overflow-hidden bg-gray-100 dark:bg-slate-800 border-b-2 border-gray-300 dark:border-slate-600 shadow-lg">
+        <div class="overflow-hidden bg-primary-500/5 dark:bg-primary-500/10 border-b border-primary-500/20 backdrop-blur-sm shadow-sm ring-1 ring-black/5">
           <div
             id="data-table-header-inner"
             class="flex"
@@ -86,17 +86,17 @@ export function DataTable(props: DataTableProps) {
             {/* Row number header */}
             <div
               style={{ width: '60px', "min-width": '60px', "max-width": '60px' }}
-              class="px-3 py-4 text-center border-r border-gray-200/50 dark:border-slate-700/50"
+              class="px-3 py-4 text-center border-r border-primary-500/10"
             >
-              <div class="text-xs font-bold text-gray-400 uppercase tracking-wider dark:text-slate-500">#</div>
+              <div class="text-[10px] font-black text-primary-600/50 uppercase tracking-widest dark:text-primary-400/50">#</div>
             </div>
             <For each={props.columns}>
               {(col: string) => (
                 <div
                   style={{ width: `${colWidth()}px`, "min-width": `${colWidth()}px`, flex: `1 1 ${colWidth()}px` }}
-                  class="px-6 py-4 text-left border-r border-gray-200/50 dark:border-slate-700/50 last:border-r-0"
+                  class="px-6 py-4 text-left border-r border-primary-500/10 last:border-r-0"
                 >
-                  <div class="text-xs font-bold text-gray-600 uppercase tracking-wider dark:text-slate-400 truncate">{col}</div>
+                  <div class="text-[10px] font-black text-primary-600 uppercase tracking-[0.15em] dark:text-primary-400 truncate">{col}</div>
                 </div>
               )}
             </For>
@@ -107,7 +107,7 @@ export function DataTable(props: DataTableProps) {
       {/* Data Section */}
       <div
         id="data-table-data-section"
-        class="overflow-x-auto scrollbar-hide bg-white dark:bg-slate-900/50"
+        class="overflow-x-auto scrollbar-hide bg-white/50 dark:bg-slate-900/40"
         onScroll={(e) => syncScroll((e.currentTarget as HTMLElement).scrollLeft, 'data-table-data-section')}
       >
         <table

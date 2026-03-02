@@ -2,7 +2,7 @@ import { For, Show, createSignal, createResource, onCleanup, createEffect } from
 import { A, useNavigate } from "@solidjs/router";
 import { TbOutlineArrowLeft, TbOutlineTerminal, TbOutlineAlertCircle } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
-import { Button } from "./Button";
+import { TextButton } from "./TextButton";
 import { LoadingAnimation } from "./LoadingAnimation";
 import { getErrorConfig } from "../../config/errors";
 import { isWideMode } from "../../stores/layoutStore";
@@ -215,16 +215,16 @@ export function ErrorLayout(props: ErrorLayoutProps) {
             transition={{ delay: 0.3, duration: 0.6 }}
             class="flex flex-col sm:flex-row gap-4 items-center z-20"
           >
-            <Button
+            <TextButton
               size="lg"
               class={`px-8 min-w-[180px] rounded-2xl border-0 shadow-lg bg-gradient-to-r from-primary-600 to-secondary-500 text-white shadow-primary-500/30`}
               onClick={() => navigate(-1)}
               icon={<TbOutlineArrowLeft size={20} />}
             >
               Back
-            </Button>
+            </TextButton>
 
-            <Button
+            <TextButton
               variant="outline"
               size="lg"
               class="px-8 min-w-[180px] rounded-2xl border-2 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
@@ -232,7 +232,7 @@ export function ErrorLayout(props: ErrorLayoutProps) {
               icon={<TbOutlineTerminal size={20} />}
             >
               More Info
-            </Button>
+            </TextButton>
           </Motion.div>
 
           <DataModal

@@ -85,9 +85,9 @@ public class DataInitializer implements ApplicationEventListener<StartupEvent> {
     Role managerRole = roleRepository.findByName("MANAGER").orElseThrow();
     Role userRole = roleRepository.findByName("USER").orElseThrow();
 
-    createUserIfNotExists("admin@example.com", "admin123", "System Admin", Set.of(adminRole));
-    createUserIfNotExists("manager@example.com", "manager123", "Task Manager", Set.of(managerRole));
-    createUserIfNotExists("user@example.com", "user123", "Regular User", Set.of(userRole));
+    createUserIfNotExists("admin0001@example.com", "admin0001", "Administrator 0001", Set.of(adminRole));
+    createUserIfNotExists("manager0001@example.com", "manager0001", "Manager 0001", Set.of(managerRole));
+    createUserIfNotExists("user0001@example.com", "user0001", "User 0001", Set.of(userRole));
   }
 
   private void initializeTodos() {
@@ -95,17 +95,40 @@ public class DataInitializer implements ApplicationEventListener<StartupEvent> {
       return;
     }
 
-    logger.info("Seeding random todos...");
+    logger.info("Seeding 500 fun random todos...");
     Random random = new Random(42);
-    String[] prefixes = { "Review", "Update", "Fix", "Implement", "Design" };
-    String[] subjects = { "login page", "API", "database", "dashboard", "security" };
 
-    for (int i = 0; i < 20; i++) {
-      String title = prefixes[random.nextInt(prefixes.length)] + " " + subjects[random.nextInt(subjects.length)];
+    String[] verbs = {
+        "Brew", "Debug", "Hyper-focus on", "Ignore", "Refactor", "Ponder", "Optimize",
+        "Delete", "Summon", "Ship", "Wrangle", "Untangle", "Contemplate", "Launch",
+        "Polish", "Rescue", "Challenge", "Automate", "Explain", "Demystify", "Sync",
+        "Visualize", "Deploy", "Hack", "Benchmark", "Containerize", "Scale", "Verify"
+    };
+
+    String[] subjects = {
+        "coffee", "legacy code", "vibe check", "quantum bugs", "CSS shadows", "React hooks",
+        "space-time continuum", "backend wizardry", "dark mode", "keyboard shortcuts", "regex",
+        "undefined", "null pointers", "rubber duck", "the cloud", "edge cases",
+        "micro-interactions", "hotfixes", "deployment scripts", "technical debt", "Unit tests",
+        "API endpoints", "Git history", "Node modules", "Docker images", "K8s pods", "YAML files"
+    };
+
+    String[] modifiers = {
+        "with style", "at 3 AM", "like a pro", "violently", "with a smile",
+        "for the 10th time", "by mistake", "on purpose", "super fast", "silently",
+        "with extreme prejudice", "using magic", "efficiently", "accidentally", "intentionally",
+        "completely", "partially", "magically", "securely", "dangerously", "smoothly"
+    };
+
+    for (int i = 0; i < 500; i++) {
+      String title = verbs[random.nextInt(verbs.length)] + " " +
+          subjects[random.nextInt(subjects.length)] + " " +
+          modifiers[random.nextInt(modifiers.length)];
+
       boolean completed = random.nextBoolean();
       int priority = random.nextInt(5) + 1;
-      OffsetDateTime createdAt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(random.nextInt(10));
-      OffsetDateTime completedAt = completed ? createdAt.plusHours(random.nextInt(24)) : null;
+      OffsetDateTime createdAt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(random.nextInt(20));
+      OffsetDateTime completedAt = completed ? createdAt.plusHours(random.nextInt(48)) : null;
 
       Todo todo = new Todo(null, title, completed, priority, createdAt, completedAt);
       todoRepository.save(todo);

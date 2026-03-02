@@ -1,7 +1,9 @@
 import { createEffect, onCleanup, For, Show, JSX } from "solid-js";
 import { Portal } from "solid-js/web";
 import { Motion } from "solid-motionone";
-import { TbOutlineTableOptions } from "solid-icons/tb";
+import { TextButton } from "./TextButton";
+import { IconButton } from "./IconButton";
+import { TbOutlineX, TbOutlineTableOptions } from "solid-icons/tb";
 
 const isTimestamp = (type: string) => type && type.toUpperCase().includes("TIMESTAMP");
 
@@ -62,63 +64,77 @@ export function DataModal(props: DataModalProps) {
     <Show when={props.data}>
       <Portal>
         <div
-          class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 dark:bg-slate-950/70 backdrop-blur-sm"
+          class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) props.onClose(); }}
         >
           <Motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.2, easing: 'ease-out' }}
-            class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col"
+            transition={{ duration: 0.3, easing: [0.22, 1, 0.36, 1] }}
+            class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-w-2xl w-full flex flex-col max-h-[90vh]"
           >
             {/* Modal Header */}
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                {props.icon || <TbOutlineTableOptions size={20} class="text-primary-600 dark:text-primary-400" />}
-                {props.title || 'Details'}
-                <Show when={props.num}>
-                  <span class="text-sm font-mono px-2.5 py-1 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">#{props.num}</span>
-                </Show>
-              </h3>
+            <div class="bg-gradient-to-r from-primary-600 to-secondary-500 py-5 px-6 shrink-0 relative">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-white/20 rounded-xl text-white">
+                  {props.icon || <TbOutlineTableOptions size={20} />}
+                </div>
+                <div>
+                  <h3 class="text-lg font-black text-white uppercase tracking-tight leading-none mb-1">
+                    {props.title || 'Entry Details'}
+                  </h3>
+                  <Show when={props.num}>
+                    <p class="text-[10px] font-bold text-white/70 uppercase tracking-[0.2em]">Record Identifier • #{props.num}</p>
+                  </Show>
+                </div>
+              </div>
               <button
                 onClick={() => props.onClose()}
-                class="p-2 rounded-xl hover:bg-primary-100 dark:hover:bg-primary-900/30 text-primary-600 dark:text-primary-400 transition-colors"
+                class="absolute top-4 right-4 p-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                <TbOutlineX size={16} />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div class="overflow-y-auto custom-scrollbar px-6 py-4 divide-y divide-gray-100 dark:divide-slate-700/50">
+            <div class="overflow-y-auto custom-scrollbar p-8 grow space-y-6">
               <For each={props.columns}>
                 {(col: string) => {
                   const val = props.data![col];
                   const colType = props.columnTypes?.[col] || '';
                   return (
-                    <div class="py-3 flex flex-col gap-1">
-                      <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">{col}</span>
+                    <div class="flex flex-col gap-2 group">
+                      <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary-500 transition-colors">{col}</span>
                         <Show when={colType}>
-                          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">{colType}</span>
+                          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase tracking-wider">{colType}</span>
                         </Show>
                       </div>
-                      <Show when={val !== null} fallback={<span class="text-sm italic text-gray-400 dark:text-slate-500">null</span>}>
-                        <Show when={isTimestamp(colType)} fallback={
-                          <span class="text-sm text-gray-900 dark:text-white break-all whitespace-pre-wrap">{String(val)}</span>
-                        }>
-                          <div class="text-sm text-gray-900 dark:text-white font-mono mb-1 break-all">{String(val)}</div>
-                          <div class="ml-2 pl-3 border-l-2 border-primary-300 dark:border-primary-700">
+                      <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 transition-all group-hover:border-primary-500/20 group-hover:bg-white dark:group-hover:bg-slate-800">
+                        <Show when={val !== null} fallback={<span class="text-sm font-medium italic text-slate-400">Not specified (NULL)</span>}>
+                          <Show when={isTimestamp(colType)} fallback={
+                            <span class="text-sm font-semibold text-slate-700 dark:text-slate-200 break-words">{String(val)}</span>
+                          }>
+                            <div class="text-xs text-primary-600 dark:text-primary-400 font-mono mb-3 p-2 bg-primary-100/50 dark:bg-primary-900/20 rounded-lg border border-primary-200/50 dark:border-primary-800/50">{String(val)}</div>
                             <TimestampDetail dateString={String(val)} />
-                          </div>
+                          </Show>
                         </Show>
-                      </Show>
+                      </div>
                     </div>
                   );
                 }}
               </For>
             </div>
-            <Show when={props.footer}>
-              <div class="px-6 py-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50 rounded-b-2xl">
+
+            {/* Modal Footer */}
+            <Show when={props.footer} fallback={
+              <div class="p-6 shrink-0 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                <TextButton variant="outline" size="sm" class="rounded-xl px-6" onClick={() => props.onClose()}>
+                  Close View
+                </TextButton>
+              </div>
+            }>
+              <div class="p-6 shrink-0 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                 {props.footer}
               </div>
             </Show>
