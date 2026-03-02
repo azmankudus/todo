@@ -1,6 +1,6 @@
 export const RESOURCES = {
   PLACEHOLDERS: {
-    EMAIL: "name@company.com",
+    EMAIL: "johndoe@company.com",
     IDENTITY: "john.doe",
     PASSWORD_LOGIN: "••••••••••••",
     PASSWORD_REGISTER: "••••••••",

@@ -241,7 +241,7 @@ export default function LoginPage() {
                 <form onSubmit={handleLogin} class="space-y-5" novalidate>
                   <div class="space-y-2">
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest ml-1">{RESOURCES.AUTH.USERNAME_OR_EMAIL}</label>
-                    <Tooltip active={!!errors().identity || isIdentityFocused()} content={errors().identity || RESOURCES.AUTH.EMAIL_HINT} variant={errors().identity ? "error" : "default"}>
+                    <Tooltip class="block w-full" active={!!errors().identity || isIdentityFocused()} content={errors().identity || RESOURCES.AUTH.EMAIL_HINT} variant={errors().identity ? "error" : "default"}>
                       <TextField
                         placeholder={`${RESOURCES.PLACEHOLDERS.IDENTITY} or ${RESOURCES.PLACEHOLDERS.EMAIL}`}
                         value={identity()}
@@ -264,7 +264,7 @@ export default function LoginPage() {
                         {RESOURCES.AUTH.FORGOT_LINK}
                       </button>
                     </div>
-                    <Tooltip active={!!errors().password} content={errors().password} variant="error">
+                    <Tooltip class="block w-full" active={!!errors().password} content={errors().password} variant="error">
                       <TextField
                         type="password"
                         placeholder={RESOURCES.PLACEHOLDERS.PASSWORD_LOGIN}
@@ -328,7 +328,7 @@ export default function LoginPage() {
         <form onSubmit={handleRegister} class="space-y-6" novalidate>
           <div class="space-y-2">
             <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{RESOURCES.AUTH.FULL_NAME}</label>
-            <Tooltip active={!!errors().fullname} content={errors().fullname} variant="error">
+            <Tooltip class="block w-full" active={!!errors().fullname} content={errors().fullname} variant="error">
               <TextField
                 placeholder={RESOURCES.PLACEHOLDERS.FULLNAME}
                 value={fullname()}
@@ -340,7 +340,7 @@ export default function LoginPage() {
 
           <div class="space-y-2">
             <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{RESOURCES.AUTH.USERNAME}</label>
-            <Tooltip active={!!errors().username} content={errors().username} variant="error">
+            <Tooltip class="block w-full" active={!!errors().username} content={errors().username} variant="error">
               <TextField
                 placeholder={RESOURCES.PLACEHOLDERS.USERNAME}
                 value={username()}
@@ -352,7 +352,7 @@ export default function LoginPage() {
 
           <div class="space-y-2">
             <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{RESOURCES.AUTH.EMAIL}</label>
-            <Tooltip active={!!errors().email_reg || isEmailRegFocused()} content={errors().email_reg || RESOURCES.AUTH.EMAIL_HINT} variant={errors().email_reg ? "error" : "default"}>
+            <Tooltip class="block w-full" active={!!errors().email_reg || isEmailRegFocused()} content={errors().email_reg || RESOURCES.AUTH.EMAIL_HINT} variant={errors().email_reg ? "error" : "default"}>
               <TextField
                 type="email"
                 placeholder={RESOURCES.PLACEHOLDERS.EMAIL}
@@ -367,7 +367,7 @@ export default function LoginPage() {
 
           <div class="space-y-2">
             <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{RESOURCES.AUTH.PASSWORD}</label>
-            <Tooltip active={!!errors().password_reg || isPasswordFocused()} content={errors().password_reg || RESOURCES.AUTH.PASSWORD_COMPLEXITY} variant={errors().password_reg ? "error" : "default"}>
+            <Tooltip class="block w-full" active={!!errors().password_reg || isPasswordFocused()} content={errors().password_reg || RESOURCES.AUTH.PASSWORD_COMPLEXITY} variant={errors().password_reg ? "error" : "default"}>
               <TextField
                 type="password"
                 placeholder={RESOURCES.PLACEHOLDERS.PASSWORD_REGISTER}
@@ -400,7 +400,7 @@ export default function LoginPage() {
               <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                 {RESOURCES.AUTH.FORGOT_PASSWORD_DESC}
               </p>
-              <Tooltip active={!!errors().email_forgot || isEmailForgotFocused()} content={errors().email_forgot || RESOURCES.AUTH.EMAIL_HINT} variant={errors().email_forgot ? "error" : "default"}>
+              <Tooltip class="block w-full" active={!!errors().email_forgot || isEmailForgotFocused()} content={errors().email_forgot || RESOURCES.AUTH.EMAIL_HINT} variant={errors().email_forgot ? "error" : "default"}>
                 <TextField
                   type="email"
                   placeholder={RESOURCES.PLACEHOLDERS.EMAIL}

@@ -9,7 +9,7 @@ interface TooltipProps {
   variant?: "error" | "default";
 }
 
-export function Tooltip(props: TooltipProps) {
+export function Tooltip(props: TooltipProps & { class?: string }) {
   const variants = {
     error: "bg-red-600 text-white shadow-red-500/40",
     default: "bg-slate-800 text-white"
@@ -21,7 +21,7 @@ export function Tooltip(props: TooltipProps) {
   };
 
   return (
-    <div class="relative inline-block">
+    <div class={`relative ${props.class || "inline-block"}`}>
       {props.children}
 
       <Presence>

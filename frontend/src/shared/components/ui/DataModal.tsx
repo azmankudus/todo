@@ -141,13 +141,7 @@ export function DataModal(props: DataModalProps) {
               </div>
 
               {/* Modal Footer */}
-              <Show when={props.footer} fallback={
-                <div class="p-6 shrink-0 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                  <TextButton variant="outline" size="sm" class="rounded-xl px-6" onClick={() => props.onClose()}>
-                    {RESOURCES.COMPONENTS.DATA_MODAL.CLOSE_VIEW}
-                  </TextButton>
-                </div>
-              }>
+              <Show when={props.footer}>
                 <div class="p-6 shrink-0 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                   {props.footer}
                 </div>
