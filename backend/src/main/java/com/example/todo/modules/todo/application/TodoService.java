@@ -3,6 +3,8 @@ package com.example.todo.modules.todo.application;
 import com.example.todo.modules.todo.domain.model.Todo;
 import com.example.todo.modules.todo.domain.repository.TodoRepository;
 
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -26,6 +28,10 @@ public class TodoService {
   public List<Todo> findAll() {
     return StreamSupport.stream(repository.findAll().spliterator(), false)
         .toList();
+  }
+
+  public Page<Todo> findAll(Pageable pageable) {
+    return repository.findAll(pageable);
   }
 
   public Optional<Todo> findById(Integer id) {

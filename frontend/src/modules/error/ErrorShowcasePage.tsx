@@ -13,7 +13,7 @@ export default function ErrorShowcase() {
   const options = Object.keys(ERROR_CONFIGS).filter(key => key !== "default");
 
   return (
-    <div class={`w-full mx-auto px-6 py-12 transition-all duration-300 ${isWideMode() ? 'max-w-[98%]' : 'max-w-6xl'}`}>
+    <div class={`w-full mx-auto px-6 py-6 transition-all duration-300 ${isWideMode() ? 'max-w-[98%]' : 'max-w-6xl'}`}>
       <Motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

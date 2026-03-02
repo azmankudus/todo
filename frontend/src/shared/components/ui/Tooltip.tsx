@@ -21,7 +21,7 @@ export function Tooltip(props: TooltipProps) {
   };
 
   return (
-    <div class="relative w-full">
+    <div class="relative inline-block">
       {props.children}
 
       <Presence>
@@ -44,7 +44,7 @@ export function Tooltip(props: TooltipProps) {
             class="flex items-center"
           >
             <div
-              class={`px-3 py-2 rounded-xl shadow-2xl text-[11px] font-black uppercase tracking-wider flex items-start gap-2 max-w-xs relative leading-tight whitespace-pre-line ${variants[props.variant || "default"]
+              class={`px-3 py-2 rounded-xl shadow-2xl text-[11px] font-black uppercase tracking-wider flex items-center gap-2 relative leading-tight whitespace-nowrap ${variants[props.variant || "default"]
                 }`}
             >
               {props.content}
@@ -58,6 +58,6 @@ export function Tooltip(props: TooltipProps) {
           </Motion.div>
         </Show>
       </Presence>
-    </div>
+    </div >
   );
 }

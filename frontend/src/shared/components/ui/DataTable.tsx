@@ -33,20 +33,18 @@ const defaultRenderCell = (val: any, _type: string) => {
 
 export function DataTable(props: DataTableProps) {
   const colWidth = () => props.columnWidth || 250;
-  const stickyTop = () => props.stickyTop || '75px';
+  const rowNumWidth = 60;
+  const totalWidth = () => rowNumWidth + props.columns.length * colWidth();
+  const stickyTop = () => props.stickyTop || '65px';
   const cellRenderer = () => props.renderCell || defaultRenderCell;
 
   const syncScroll = (scrollLeft: number, excludeId?: string) => {
-    const ids = ['data-table-header-inner', 'data-table-top-scrollbar', 'data-table-data-section'];
+    const ids = ['data-table-header-container', 'data-table-top-scrollbar', 'data-table-data-section'];
     for (const id of ids) {
       if (id === excludeId) continue;
       const el = document.getElementById(id);
       if (!el) continue;
-      if (id === 'data-table-header-inner') {
-        el.style.transform = `translateX(-${scrollLeft}px)`;
-      } else {
-        el.scrollLeft = scrollLeft;
-      }
+      el.scrollLeft = scrollLeft;
     }
   };
 
@@ -70,38 +68,46 @@ export function DataTable(props: DataTableProps) {
         {/* Horizontal Scrollbar */}
         <div
           id="data-table-top-scrollbar"
-          class="overflow-x-auto custom-scrollbar bg-transparent"
-          style={{ height: '8px' }}
+          class="overflow-x-auto custom-scrollbar bg-white dark:bg-slate-900 border-b border-primary-500/10"
+          style={{ height: '12px' }}
           onScroll={(e) => syncScroll((e.currentTarget as HTMLElement).scrollLeft, 'data-table-top-scrollbar')}
         >
-          <div style={{ width: `max(${props.columns.length * colWidth()}px, 100%)`, height: '1px' }}></div>
+          <div style={{ width: `${totalWidth()}px`, "min-width": '100%', height: '1px' }}></div>
         </div>
 
         {/* Header Row */}
-        <div class="overflow-hidden bg-primary-500/5 dark:bg-primary-500/10 border-b border-primary-500/20 backdrop-blur-sm shadow-sm ring-1 ring-black/5">
-          <div
+        <div
+          id="data-table-header-container"
+          class="overflow-x-auto scrollbar-hide bg-primary-500/5 dark:bg-primary-500/10 border-b border-primary-500/20 backdrop-blur-sm shadow-sm ring-1 ring-black/5"
+          onScroll={(e) => syncScroll((e.currentTarget as HTMLElement).scrollLeft, 'data-table-header-container')}
+        >
+          <table
             id="data-table-header-inner"
-            class="flex"
-            style={{ "min-width": `${props.columns.length * colWidth()}px`, width: '100%' }}
+            class="table-fixed border-collapse"
+            style={{ width: `${totalWidth()}px`, "min-width": '100%' }}
           >
-            {/* Row number header */}
-            <div
-              style={{ width: '60px', "min-width": '60px', "max-width": '60px' }}
-              class="px-3 py-4 text-center border-r border-primary-500/10"
-            >
-              <div class="text-[10px] font-black text-primary-600/50 uppercase tracking-widest dark:text-primary-400/50">#</div>
-            </div>
-            <For each={props.columns}>
-              {(col: string) => (
-                <div
-                  style={{ width: `${colWidth()}px`, "min-width": `${colWidth()}px`, flex: `1 1 ${colWidth()}px` }}
-                  class="px-6 py-4 text-left border-r border-primary-500/10 last:border-r-0"
+            <thead>
+              <tr>
+                {/* Row number header */}
+                <th
+                  style={{ width: '60px', "min-width": '60px', "max-width": '60px' }}
+                  class="p-0 border-r border-primary-500/10"
                 >
-                  <div class="text-[10px] font-black text-primary-600 uppercase tracking-[0.15em] dark:text-primary-400 truncate">{col}</div>
-                </div>
-              )}
-            </For>
-          </div>
+                  <div class="px-3 py-4 text-center text-[10px] font-black text-primary-600/50 uppercase tracking-widest dark:text-primary-400/50">#</div>
+                </th>
+                <For each={props.columns}>
+                  {(col: string) => (
+                    <th
+                      style={{ width: `${colWidth()}px`, "min-width": `${colWidth()}px` }}
+                      class="p-0 border-r border-primary-500/10 last:border-r-0"
+                    >
+                      <div class="px-6 py-4 text-left text-[10px] font-black text-primary-600 uppercase tracking-[0.15em] dark:text-primary-400 truncate">{col}</div>
+                    </th>
+                  )}
+                </For>
+              </tr>
+            </thead>
+          </table>
         </div>
       </div>
 
@@ -113,7 +119,7 @@ export function DataTable(props: DataTableProps) {
       >
         <table
           class="table-fixed border-collapse"
-          style={{ "min-width": `${props.columns.length * colWidth()}px`, width: '100%' }}
+          style={{ width: `${totalWidth()}px`, "min-width": '100%' }}
         >
           <tbody class="divide-y divide-gray-200 dark:divide-slate-800">
             <For each={props.rows}>

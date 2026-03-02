@@ -10,6 +10,9 @@ import com.example.todo.modules.todo.domain.model.Todo;
 
 import io.micronaut.cache.annotation.CacheInvalidate;
 import io.micronaut.cache.annotation.Cacheable;
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
+import io.micronaut.data.model.Sort;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
@@ -46,16 +49,23 @@ public class TodoController {
   @Secured("todo:read")
   @Cacheable("todos")
   @Get
-  public MutableHttpResponse<Map<String, Object>> listTodos() throws ApplicationException {
+  public MutableHttpResponse<Map<String, Object>> listTodos(
+      @QueryValue(defaultValue = "0") int page,
+      @QueryValue(defaultValue = "10") int size) throws ApplicationException {
     OffsetDateTime startTime = OffsetDateTime.now();
     String requestId = "TODO-" + UuidUtil.timeBasedUuidString();
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Fetching all todos (Request ID: {})", requestId);
+      logger.debug("Fetching todos - page: {}, size: {} (Request ID: {})", page, size, requestId);
     }
-    List<TodoResponse> todos = todoService.findAll().stream()
+
+    Pageable pageable = Pageable.from(page, size, Sort.of(Sort.Order.desc("createdAt")));
+    Page<Todo> todoPage = todoService.findAll(pageable);
+
+    List<TodoResponse> todos = todoPage.getContent().stream()
         .map(todoMapper::toResponse)
         .toList();
+
     return HttpResponseUtil.create(
         HttpStatus.OK,
         requestId,
@@ -63,7 +73,12 @@ public class TodoController {
         "",
         "Todos fetched",
         startTime,
-        Map.of("todos", todos));
+        Map.of(
+            "todos", todos,
+            "totalRows", todoPage.getTotalSize(),
+            "totalPages", todoPage.getTotalPages(),
+            "currentPage", todoPage.getPageNumber() + 1,
+            "pageSize", todoPage.getSize()));
   }
 
   @Secured("todo:write")

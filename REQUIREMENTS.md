@@ -41,8 +41,8 @@ micronaut-security-jwt = { module = "io.micronaut.security:micronaut-security-jw
 ### 2. Frontend Package Manager
 **ALWAYS** use `bun run` for frontend commands. Never use npm, yarn, or call vinxi directly.
 
-### 3. DuckDB Limitations
-- Requires explicit `RETURNING` clauses for INSERT/UPDATE
+### 3. H2 Database (PostgreSQL Mode)
+- Supports explicit `RETURNING` clauses for INSERT/UPDATE
 - Use `@Requires` annotation to skip data initializers in tests:
   ```java
   @Requires(property = "data-initialization.enabled", value = "true", defaultValue = "false")

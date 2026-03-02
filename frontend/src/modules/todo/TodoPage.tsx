@@ -1,4 +1,4 @@
-import { createSignal, onMount, For, Show } from "solid-js";
+import { createSignal, onMount, For, Show, createEffect } from "solid-js";
 import { ApiStatus } from "../../shared/domain/ApiStatus";
 import { createStore, reconcile } from "solid-js/store";
 import { TbOutlineTrash, TbOutlinePlus } from "solid-icons/tb";
@@ -12,6 +12,7 @@ import { showLoading, hideLoading } from "../../shared/stores/loadingStore";
 import { isWideMode } from "../../shared/stores/layoutStore";
 import { apiClient } from "../../shared/utils/api";
 import { DataModal } from "../../shared/components/ui/DataModal";
+import { Pagination } from "../../shared/components/ui/Pagination";
 import { RESOURCES } from "../../config/resources";
 
 interface Todo {
@@ -23,8 +24,6 @@ interface Todo {
   completedAt?: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL + "/todo";
-
 export default function TodoPage() {
   const [todos, setTodos] = createStore<Todo[]>([]);
   const [inputValue, setInputValue] = createSignal("");
@@ -33,12 +32,22 @@ export default function TodoPage() {
   const [selectedTodo, setSelectedTodo] = createSignal<Todo | null>(null);
   const [selectedTodoIdx, setSelectedTodoIdx] = createSignal<number>(0);
 
-  onMount(async () => {
+  // Pagination states
+  const [currentPage, setCurrentPage] = createSignal(1);
+  const [pageSize, setPageSize] = createSignal(10);
+  const [totalRows, setTotalRows] = createSignal(0);
+  const [totalPages, setTotalPages] = createSignal(0);
+
+  const fetchTodos = async (page: number, size: number) => {
     showLoading("spinner", RESOURCES.TODO.LOADING_TASKS);
     try {
-      const data = await apiClient("/todo");
+      const data = await apiClient(`/todo?page=${page - 1}&size=${size}`);
       if (data.status === ApiStatus.SUCCESS) {
         setTodos(reconcile(data.details.todos));
+        setTotalRows(data.details.totalRows || 0);
+        setTotalPages(data.details.totalPages || 0);
+        setCurrentPage(data.details.currentPage || 1);
+        setPageSize(data.details.pageSize || 10);
       }
     } catch (error) {
       console.error("Fetch error:", error);
@@ -46,6 +55,15 @@ export default function TodoPage() {
       setIsLoading(false);
       hideLoading();
     }
+  };
+
+  onMount(() => {
+    fetchTodos(currentPage(), pageSize());
+  });
+
+  createEffect(() => {
+    // Re-fetch when page or size changes
+    fetchTodos(currentPage(), pageSize());
   });
 
   const addTodo = async (e: Event) => {
@@ -60,7 +78,9 @@ export default function TodoPage() {
       });
 
       if (data.status === ApiStatus.SUCCESS) {
-        setTodos(todos.length, data.details.todo);
+        // After adding, we want the user to see the new task (sorted by newest)
+        setCurrentPage(1);
+        fetchTodos(1, pageSize());
         setInputValue("");
         setPriorityValue(5); // Reset to default Priority 5
       }
@@ -109,7 +129,7 @@ export default function TodoPage() {
 
 
   return (
-    <main class={`mx-auto px-4 py-12 transition-all duration-300 w-full ${isWideMode() ? 'max-w-[95%]' : 'max-w-3xl'}`}>
+    <main class={`mx-auto px-4 py-6 transition-all duration-300 w-full ${isWideMode() ? 'max-w-[95%]' : 'max-w-3xl'}`}>
       <Motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -138,6 +158,18 @@ export default function TodoPage() {
             {RESOURCES.TODO.ADD_TASK}
           </TextButton>
         </Motion.form>
+
+        <div class="sticky top-[65px] z-30 mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-all duration-300">
+          <Pagination
+            currentPage={currentPage()}
+            totalPages={totalPages()}
+            totalRows={totalRows()}
+            pageSize={pageSize()}
+            pageSizeOptions={[10, 25, 50, 100]}
+            onPageChange={(p) => setCurrentPage(p)}
+            onPageSizeChange={(s) => { setPageSize(s); setCurrentPage(1); }}
+          />
+        </div>
 
         <Show when={isLoading()}>
           <div class="flex justify-center items-center py-12 text-primary-600 animate-pulse font-medium">{RESOURCES.TODO.LOADING_TASK_MESSAGE}</div>

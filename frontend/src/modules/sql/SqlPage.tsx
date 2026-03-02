@@ -185,7 +185,7 @@ export default function SqlPage() {
                       totalRows={totalRows()}
                       pageSize={pageSize()}
                       pageSizeOptions={[10, 25, 50, 100, 200]}
-                      stickyTop="75px"
+                      stickyTop="65px"
                       onPageChange={(page) => setCurrentPage(page)}
                       onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
                       onRowClick={(row, rowNum) => { setSelectedRow(row); setSelectedRowNum(rowNum); }}

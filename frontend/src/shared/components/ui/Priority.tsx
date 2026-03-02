@@ -1,4 +1,5 @@
 import { createSignal, onMount, onCleanup, For, Show } from "solid-js";
+import { Tooltip } from "./Tooltip";
 import { TbOutlineChevronDown } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
 import { RESOURCES } from "../../../config/resources";
@@ -27,14 +28,25 @@ export function PriorityIconLabel(props: { priority: number; format?: "short" | 
 }
 
 export function PriorityBadge(props: { priority: number; showLabel?: boolean; labelFormat?: "short" | "full" }) {
+  const [isHovered, setIsHovered] = createSignal(false);
+  const p = () => PRIORITIES.find(x => x.value === props.priority) || PRIORITIES[4];
+
   return (
-    <PriorityIconLabel
-      priority={props.priority}
-      format={props.showLabel ? (props.labelFormat || "short") : "iconOnly"}
-      class="px-2 py-1 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 inline-flex"
-      iconClass="w-3 h-3"
-      textClass="text-xs font-semibold text-slate-600 dark:text-slate-300"
-    />
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      class="inline-block"
+    >
+      <Tooltip active={isHovered()} content={p().label}>
+        <PriorityIconLabel
+          priority={props.priority}
+          format={props.showLabel ? (props.labelFormat || "short") : "iconOnly"}
+          class="px-2 py-1 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 inline-flex cursor-help"
+          iconClass="w-3 h-3"
+          textClass="text-xs font-semibold text-slate-600 dark:text-slate-300"
+        />
+      </Tooltip>
+    </div>
   );
 }
 

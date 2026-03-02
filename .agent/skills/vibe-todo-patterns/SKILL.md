@@ -22,15 +22,16 @@ public record Todo(
 ) {}
 ```
 
-### 2. DuckDB Repository Pattern
-DuckDB requires explicit `RETURNING` clauses:
+### 2. H2 Database Pattern (PostgreSQL Mode)
+H2 in PostgreSQL mode supports `RETURNING *` for INSERT/UPDATE:
 ```java
-@Query("INSERT INTO todo (...) VALUES (...) RETURNING *")
+@Query("INSERT INTO tb_todo (...) VALUES (...) RETURNING *")
 Todo save(Todo todo);
 
-@Query("UPDATE todo SET title=:title WHERE id=:id RETURNING *")
+@Query("UPDATE tb_todo SET title=:title WHERE id=:id RETURNING *")
 Todo update(String id, String title);
 ```
+Note: Tables use `tb_` prefix (e.g., `tb_todo`).
 
 ### 3. Data Initializers
 Use `@Requires` to skip in tests:
@@ -62,6 +63,7 @@ public class TodoController {
 - **No Boilerplate**: Use Java records for all DTOs and Entities.
 - **MapStruct for Mappers**: Use MapStruct interfaces with `componentModel = MappingConstants.ComponentModel.JAKARTA` for all data mapping. Avoid manual mapper implementations.
 - **Exception Propagation**: Allow `SQLException` and other core exceptions to propagate to the `Controller` layer. Wrap them in `ApplicationException` with the original cause to preserve stack traces for the frontend "More Info" button.
+- **Standardized Responses**: Use `HttpResponseUtil.create()` to ensure all responses follow the `GenericAPIObject` structure. This includes `trace_id`, `timestamp`, `status`, and `duration`.
 
 ## Frontend Patterns (SolidJS)
 
@@ -81,9 +83,10 @@ localStorage.setItem('theme', theme);
 - **Authentication State**: To avoid circular dependencies with `apiClient`, extract core auth state (`user`, `accessToken`, `refreshToken`) and headers (`getAuthHeaders`) into `src/shared/stores/authBase.ts`. `src/shared/stores/authStore.ts` should import from `authBase.ts` and handle high-level logic (login/logout).
 
 ### 2. Component Design
-- **Theme Selection**: Use custom `ThemeDropdown` in Navigation.tsx (not native `<select>`)
-- **Tooltips**: Use Portal-based Tooltip component with `getBoundingClientRect()` for fixed positioning
-- **Scrollbars**: Apply `.custom-scrollbar` class for styled scrollbars
+- **Icons**: Use `solid-icons` library. Import specific icons from sub-packages (e.g., `import { FaSolidLock } from "solid-icons/fa"`).
+- **Tooltips**: Use Portal-based Tooltip component with `getBoundingClientRect()` for fixed positioning. Ensure tooltip text is concise.
+- **Scrollbars**: Apply `.custom-scrollbar` class for styled scrollbars.
+- **Buttons**: Use `IconButton` for icon-only actions and `TextButton` for labeled actions. Both support theme-aware hover effects and loading states.
 
 ### 3. Animations & Transitions
 **CRITICAL - List Animations:**
