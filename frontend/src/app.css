@@ -19,6 +19,7 @@
 @import "./styles/themes/amethyst.css";
 @import "./styles/themes/sapphire.css";
 @import "./styles/themes/emerald.css";
+@import "./styles/animations.css";
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -115,4 +116,8 @@
   transform: translateX(0);
 }
 
-@import "./styles/animations.css";
+/* Dropdown fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

@@ -22,13 +22,15 @@ try {
 const contextPath = backendProps["micronaut.server.context-path"] || "";
 const cleanContextPath = contextPath === "/" ? "" : contextPath.replace(/\/$/, "");
 
-const isDev = process.argv.includes("dev") || process.env.NODE_ENV === "development";
+const uiPath = `${cleanContextPath}/ui`;
+const backendPort = backendProps["micronaut.server.port"] || "8080";
+const isDev = process.env.NODE_ENV !== "production";
 
-// @ts-ignore
-const basePath = process.env.VITE_BASE_URL || `${cleanContextPath}/ui`;
-// @ts-ignore
-const realApiPath = process.env.VITE_API_URL || `${cleanContextPath}/api`;
-const proxyApiPath = isDev ? `${basePath}/api-proxy` : realApiPath;
+// In dev: point directly to backend server (absolute URL)
+// In prod: use relative path (served by same server via reverse proxy)
+const apiPath = isDev
+  ? `http://localhost:${backendPort}${cleanContextPath}/api`
+  : `${cleanContextPath}/api`;
 
 export default defineConfig({
   ssr: false,
@@ -37,20 +39,17 @@ export default defineConfig({
       tailwindcss()
     ],
     define: {
-      "import.meta.env.VITE_API_URL": JSON.stringify(proxyApiPath),
-      "import.meta.env.VITE_BASE_URL": JSON.stringify(basePath)
+      "import.meta.env.VITE_API_URL": JSON.stringify(apiPath),
+      "import.meta.env.VITE_BASE_URL": JSON.stringify(uiPath)
     },
     build: {
-      minify: "esbuild", // Explicitly ensure minification is enabled
+      minify: "esbuild",
       cssMinify: true,
-      sourcemap: false // Disable sourcemaps for smaller production assets
+      sourcemap: false
     }
   },
   server: {
     preset: "static",
-    baseURL: basePath,
-    routeRules: isDev ? {
-      [`${proxyApiPath}/**`]: { proxy: "http://localhost:8080" + realApiPath + "/**" }
-    } : {}
+    baseURL: uiPath
   }
 });

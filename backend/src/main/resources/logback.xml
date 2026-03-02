@@ -20,10 +20,14 @@
     <encoder>
       <pattern>${PATTERN}</pattern>
     </encoder>
-    <rollingPolicy class="com.example.todo.logging.CustomRollingPolicy">
+    <rollingPolicy class="com.example.todo.shared.logging.CustomRollingPolicy">
       <maxFileSize>${FILE_SIZE}</maxFileSize>
       <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
       <uncompressedFileCount>3</uncompressedFileCount>
+      <!-- Roll at specific times daily (comma-separated HH:mm) -->
+      <rollSchedule>08:00,20:00</rollSchedule>
+      <!-- Roll every 12 hours after app start (ISO-8601 duration) -->
+      <!-- <rollInterval>PT12H</rollInterval> -->
     </rollingPolicy>
   </appender>
   <appender name="CONSOLE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
@@ -35,7 +39,7 @@
 
   <logger name="com.example.todo" level="TRACE" />
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="CONSOLE_ASYNC" />
     <appender-ref ref="FILE_ASYNC" />
   </root>

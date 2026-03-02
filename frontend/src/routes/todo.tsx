@@ -1,6 +1,7 @@
 import { createSignal, onMount, For, Show } from "solid-js";
+import { ApiStatus } from "../domain/shared/ApiStatus";
 import { createStore, reconcile } from "solid-js/store";
-import { Trash2, Plus } from "lucide-solid";
+import { TbOutlineTrash, TbOutlinePlus } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
 import { TransitionGroup } from "solid-transition-group";
 import { Button } from "../components/ui/Button";
@@ -9,9 +10,11 @@ import { Checkbox } from "../components/ui/Checkbox";
 import { PrioritySelect, PriorityBadge } from "../components/ui/Priority";
 import { showLoading, hideLoading } from "../stores/loadingStore";
 import { isWideMode } from "../stores/layoutStore";
+import { apiClient } from "../utils/api";
+import { DataModal } from "../components/ui/DataModal";
 
 interface Todo {
-  id: string;
+  id: number;
   title: string;
   completed: boolean;
   priority: number;
@@ -26,13 +29,15 @@ export default function TodoPage() {
   const [inputValue, setInputValue] = createSignal("");
   const [priorityValue, setPriorityValue] = createSignal(5); // Default to Priority 5
   const [isLoading, setIsLoading] = createSignal(true);
+  const [selectedTodo, setSelectedTodo] = createSignal<Todo | null>(null);
+  const [selectedTodoIdx, setSelectedTodoIdx] = createSignal<number>(0);
 
   onMount(async () => {
     showLoading("spinner", "Loading tasks...");
     try {
-      const response = await fetch(API_URL);
-      if (response.ok) {
-        setTodos(reconcile(await response.json()));
+      const data = await apiClient("/todo");
+      if (data.status === ApiStatus.SUCCESS) {
+        setTodos(reconcile(data.details.todos));
       }
     } catch (error) {
       console.error("Fetch error:", error);
@@ -48,14 +53,13 @@ export default function TodoPage() {
     showLoading("pencil", "Adding...");
 
     try {
-      const response = await fetch(API_URL, {
+      const data = await apiClient("/todo", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: inputValue(), completed: false, priority: priorityValue() }),
       });
 
-      if (response.ok) {
-        setTodos(todos.length, await response.json());
+      if (data.status === ApiStatus.SUCCESS) {
+        setTodos(todos.length, data.details.todo);
         setInputValue("");
         setPriorityValue(5); // Reset to default Priority 5
       }
@@ -66,7 +70,7 @@ export default function TodoPage() {
     }
   };
 
-  const toggleTodo = async (id: string, currentStatus: boolean, title: string, priority: number) => {
+  const toggleTodo = async (id: number, currentStatus: boolean, title: string, priority: number) => {
     setTodos(todo => todo.id === id, "completed", !currentStatus);
     if (currentStatus) {
       showLoading("undo", "Reopening...");
@@ -74,11 +78,11 @@ export default function TodoPage() {
       showLoading("check", "Completing...");
     }
     try {
-      await fetch(`${API_URL}/${id}`, {
+      const data = await apiClient(`/todo/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, completed: !currentStatus, priority }),
       });
+      if (data.status !== ApiStatus.SUCCESS) throw new Error(data.message || "Update failed");
     } catch (error) {
       setTodos(todo => todo.id === id, "completed", currentStatus);
     } finally {
@@ -86,14 +90,17 @@ export default function TodoPage() {
     }
   };
 
-  const deleteTodo = async (id: string) => {
-    const previousTodos = [...todos];
-    setTodos(t => t.filter(todo => todo.id !== id));
+  const deleteTodo = async (id: number) => {
     showLoading("trash", "Deleting...");
     try {
-      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      const data = await apiClient(`/todo/${id}`, { method: "DELETE" });
+      if (data.status === ApiStatus.SUCCESS) {
+        setTodos(t => t.filter(todo => todo.id !== id));
+      } else {
+        throw new Error(data.message || "Delete failed");
+      }
     } catch (error) {
-      setTodos(reconcile(previousTodos));
+      console.error("Delete error:", error);
     } finally {
       hideLoading();
     }
@@ -126,8 +133,8 @@ export default function TodoPage() {
             class="focus:ring-2 focus:ring-primary-500 dark:bg-slate-800 dark:text-white"
           />
           <PrioritySelect value={priorityValue()} onChange={setPriorityValue} />
-          <Button type="submit" variant="solid" class="px-6 shrink-0 shadow-md">
-            <Plus size={20} /> Add
+          <Button type="submit" variant="solid" class="px-6 shrink-0 shadow-md" icon={<TbOutlinePlus size={20} />}>
+            Add
           </Button>
         </Motion.form>
 
@@ -172,34 +179,78 @@ export default function TodoPage() {
               {(todo, i) => (
                 <li
                   data-index={i()}
-                  class={`group flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm transition-colors duration-300 ${todo.completed ? 'opacity-50' : ''}`}
+                  class={`group flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm transition-all duration-300 cursor-pointer hover:border-primary-500/50 hover:shadow-md ${todo.completed ? 'opacity-50' : ''}`}
+                  onClick={() => {
+                    setSelectedTodo(todo);
+                    setSelectedTodoIdx(i() + 1);
+                  }}
                 >
-                  <Checkbox
-                    checked={todo.completed}
-                    onChange={() => toggleTodo(todo.id, todo.completed, todo.title, todo.priority)}
-                    class="w-7 h-7 rounded-md mr-5 shrink-0 transition-transform hover:scale-110"
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={todo.completed}
+                      onChange={() => toggleTodo(todo.id, todo.completed, todo.title, todo.priority)}
+                      class="w-7 h-7 rounded-md mr-5 shrink-0 transition-transform hover:scale-110"
+                    />
+                  </div>
                   <span class={`flex-1 text-lg font-medium transition-colors ${todo.completed ? 'line-through text-gray-400 dark:text-slate-500' : 'text-gray-800 dark:text-slate-100'}`}>
                     {todo.title}
                   </span>
                   <div class="mr-4">
                     <PriorityBadge priority={todo.priority} showLabel={true} />
                   </div>
-                  <Motion.button
-                    hover={{ scale: 1.15, rotate: 5 }}
-                    press={{ scale: 0.9 }}
-                    transition={{ duration: 0.1 }}
-                    class="p-2 inline-flex items-center justify-center rounded-xl text-red-500 bg-red-50 dark:bg-red-500/10 dark:hover:bg-red-600 transition-colors opacity-100 hover:text-white"
-                    onClick={() => deleteTodo(todo.id)}
-                    aria-label="Delete todo"
-                  >
-                    <Trash2 size={18} />
-                  </Motion.button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Motion.button
+                      hover={{ scale: 1.15, rotate: 5 }}
+                      press={{ scale: 0.9 }}
+                      transition={{ duration: 0.1 }}
+                      class="p-2 inline-flex items-center justify-center rounded-xl text-red-500 bg-red-50 dark:bg-red-500/10 dark:hover:bg-red-600 transition-colors opacity-100 hover:text-white"
+                      onClick={() => deleteTodo(todo.id)}
+                      aria-label="Delete todo"
+                    >
+                      <TbOutlineTrash size={18} />
+                    </Motion.button>
+                  </div>
                 </li>
               )}
             </For>
           </TransitionGroup>
         </ul>
+
+        <DataModal
+          data={selectedTodo()}
+          num={selectedTodoIdx()}
+          columns={["id", "title", "completed", "priority", "createdAt", "completedAt"]}
+          title="Task Details"
+          onClose={() => setSelectedTodo(null)}
+          footer={
+            <div class="flex items-center justify-between w-full">
+              <div class="flex items-center gap-3">
+                <Checkbox
+                  checked={selectedTodo()?.completed || false}
+                  onChange={() => {
+                    const todo = selectedTodo()!;
+                    toggleTodo(todo.id, todo.completed, todo.title, todo.priority);
+                  }}
+                  class="w-8 h-8 rounded-lg transition-transform hover:scale-110"
+                />
+              </div>
+              <Motion.button
+                hover={{ scale: 1.15, rotate: 5 }}
+                press={{ scale: 0.9 }}
+                transition={{ duration: 0.1 }}
+                class="p-2.5 inline-flex items-center justify-center rounded-xl text-red-500 bg-red-50 dark:bg-red-500/10 dark:hover:bg-red-600 transition-colors hover:text-white"
+                onClick={async () => {
+                  const todo = selectedTodo()!;
+                  await deleteTodo(todo.id);
+                  setSelectedTodo(null);
+                }}
+                aria-label="Delete todo"
+              >
+                <TbOutlineTrash size={22} />
+              </Motion.button>
+            </div>
+          }
+        />
       </div>
     </main>
   );

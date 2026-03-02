@@ -5,55 +5,216 @@ description: Core implementation patterns and known "gotchas" for the Vibe Todo 
 
 # Vibe Todo Implementation Patterns
 
-This skill documentation ensures consistency and prevents hallucinations when modifying the Vibe Todo codebase, particularly the balance between SolidJS frontend behaviors and the Java/DuckDB backend.
+This skill documentation ensures consistency and prevents hallucinations when modifying the Vibe Todo codebase.
 
-## Frontend Architecture (SolidJS)
+## Backend Patterns (Java Micronaut)
+
+### 1. Entity Definition
+Use Java records for immutable entities:
+```java
+public record Todo(
+    String id,
+    String title,
+    boolean completed,
+    int priority,
+    Instant createdAt,
+    Instant completedAt
+) {}
+```
+
+### 2. DuckDB Repository Pattern
+DuckDB requires explicit `RETURNING` clauses:
+```java
+@Query("INSERT INTO todo (...) VALUES (...) RETURNING *")
+Todo save(Todo todo);
+
+@Query("UPDATE todo SET title=:title WHERE id=:id RETURNING *")
+Todo update(String id, String title);
+```
+
+### 3. Data Initializers
+Use `@Requires` to skip in tests:
+```java
+@Requires(property = "data-initialization.enabled", value = "true", defaultValue = "false")
+@Singleton
+public class TodoDataInitializer implements ApplicationEventListener<StartupEvent> { ... }
+```
+
+### 4. Controller with Caching
+```java
+@Controller("/api/todo")
+@Cacheable("todos")
+public class TodoController {
+    @Get public List<Todo> list() { ... }
+    @Post @CacheInvalidate("todos") public Todo create(@Body TodoCreateRequest req) { ... }
+    @Put @CacheInvalidate("todos") public Todo update(String id, @Body TodoUpdateRequest req) { ... }
+    @Delete @CacheInvalidate("todos") public void delete(String id) { ... }
+}
+```
+
+### 5. Service Layer Pattern
+- **Concrete Classes Only**: Use concrete concrete classes annotated with `@Singleton`. Avoid Interface/Impl pairs unless multiple implementations are actually required.
+- **Constructor Injection**: Use standard constructor injection without the `@Inject` annotation (Micronaut handles this automatically for single constructors).
+
+### 6. Modern Java Coding Standards
+- **Explicit Typing**: DO NOT use `var`. Always use explicit types for local variable declarations to maintain clarity.
+- **Functional Idioms**: Favor `Optional` and `Stream` APIs for cleaner, more declarative logic.
+- **No Boilerplate**: Use Java records for all DTOs and Entities.
+- **MapStruct for Mappers**: Use MapStruct interfaces with `componentModel = MappingConstants.ComponentModel.JAKARTA` for all data mapping. Avoid manual mapper implementations.
+- **Exception Propagation**: Allow `SQLException` and other core exceptions to propagate to the `Controller` layer. Wrap them in `ApplicationException` with the original cause to preserve stack traces for the frontend "More Info" button.
+
+## Frontend Patterns (SolidJS)
 
 ### 1. Global State Management
-- **Layout State**: Use the `layoutStore.ts` for global UI toggles like `isWideMode`. This is a Solid Signal exported directly and is persisted to `localStorage`.
-- **LocalStorage Consistency**: All keys stored in `localStorage` must be wrapped in the `getStorageKey()` utility from `config.ts`. This ensures they are prefixed with `CONFIG.storagePrefix` (default: `vibe_todo_`) to avoid collisions.
-- **Loading State**: Use `loadingStore.ts` via `showLoading(id, msg)` and `hideLoading()` to orchestrate the global progress modal.
+- **Layout State**: Use `layoutStore.ts` for global UI toggles (`isWideMode`)
+- **Loading State**: Use `loadingStore.ts` via `showLoading(id, msg)` and `hideLoading()`
+- **LocalStorage**: All keys must use `getStorageKey()` from `config.ts`
+
+```typescript
+// CORRECT
+localStorage.setItem(getStorageKey('theme'), theme);
+
+// WRONG
+localStorage.setItem('theme', theme);
+```
+
+- **Authentication State**: To avoid circular dependencies with `apiClient`, extract core auth state (`user`, `accessToken`, `refreshToken`) and headers (`getAuthHeaders`) into `authBase.ts`. `authStore.ts` should import from `authBase.ts` and handle high-level logic (login/logout).
 
 ### 2. Component Design
-- **Theme Selection**: Do not use native `<select>` tags. Use the custom `ThemeDropdown` component in `Navigation.tsx`.
-    - It handles sorting (placing the active value at the top).
-    - It uses `OptionBadge` for visual color/pattern previews.
-- **Tooltips**: Use the `Tooltip` component defined in `sql.tsx` (or extract to a shared UI folder).
-    - **Implementation**: Uses `<Portal>` and `createEffect` with `getBoundingClientRect()` for `fixed` viewport positioning.
-    - **Reason**: This prevents tooltips from being clipped by `overflow: hidden` or `overflow: auto` containers (like the SQL results table).
-- **Scrollbars**: Apply the `.custom-scrollbar` class (defined in `app.css`) to containers with overflow.
+- **Theme Selection**: Use custom `ThemeDropdown` in Navigation.tsx (not native `<select>`)
+- **Tooltips**: Use Portal-based Tooltip component with `getBoundingClientRect()` for fixed positioning
+- **Scrollbars**: Apply `.custom-scrollbar` class for styled scrollbars
 
 ### 3. Animations & Transitions
-- **List Animations**: 
-    - **NEVER** use `<Presence>` from `solid-motionone` for large arrays (e.g., more than 10 items) or items loaded behind a conditional `Show`. It often fails to track DOM nodes, rendering only the first item.
-    - **ALWAYS** use `<TransitionGroup>` from `solid-transition-group`.
-    - **Staggering**: Since standard `TransitionGroup` index arguments can be unstable on mount, use the `data-index={i()}` pattern on the `li` and retrieve it in `onEnter` via `el.getAttribute('data-index')`.
-- **Mount Requirements**: Keep the `TransitionGroup` mounted even when data is empty to ensure `onEnter` triggers immediately when the `todos` array is populated from the backend.
+**CRITICAL - List Animations:**
+```tsx
+// CORRECT - Use TransitionGroup for lists
+<TransitionGroup enterClass="opacity-0" exitClass="opacity-0">
+  <For each={todos()}>{(todo, i) => 
+    <li data-index={i()} class="transition-opacity duration-200">{todo.title}</li>
+  }</For>
+</TransitionGroup>
 
-### 4. Styling (Tailwind V4)
-- The project follows Tailwind V4 conventions using `@theme` and `@apply` in `app.css`.
-- **Cursor Pointer**: All interactive elements (`button`, `a`, etc.) are globally set to `cursor: pointer` in `app.css`. Use the `cursor-help` class for elements triggering tooltips.
+// WRONG - Presence fails with >10 items
+<Presence><For each={todos()}>...</For></Presence>
+```
 
-## Backend Integration (Java Micronaut)
+For staggered animations, use `data-index` attribute and retrieve in `onEnter`:
+```typescript
+onEnter={(el, done) => {
+  const index = parseInt(el.getAttribute('data-index') || '0');
+  // Use index for stagger delay
+}}
+```
 
-### 1. SQL Explorer Protocol
-- The `SqlController.java` returns a `SqlResult` containing:
-    - `rows`: Data list.
-    - `columns`: Column names list.
-    - `columnTypes`: A Map of column names to their SQL type names (e.g., `VARCHAR`, `TIMESTAMP`).
-- The frontend uses `columnTypes` to determine formatting (e.g., rendering `renderCell` with `TimestampTooltip`).
+### 4. Styling (TailwindCSS 4)
+- Use `@theme` and `@apply` in `app.css`
+- All interactive elements have `cursor: pointer` globally
+- Use `cursor-help` for tooltip triggers
 
-### 2. DuckDB / Database
-- Data types like UUID and TIMESTAMP are handled via JDBC.
-- Ensure the backend continues to provide `columnTypeName` in metadata so the frontend can correctly identify formatting rules.
+### 5. Component Props Pattern
+```tsx
+interface Props {
+  title: string;
+  onClick?: () => void;
+  class?: string;
+  children?: JSX.Element;
+}
 
-## Known Lints & Non-Blocking Warnings
-- **CSS**: IDE warnings about `@theme` or `@variant` in `app.css` are typically false positives from older CSS module parsers; verify build status instead of chasing these.
-- **Java**: `RepoTest.log` is unused but left for debugging context.
+export function MyComponent(props: Props) {
+  const { title, onClick, class: klass, children } = props;
+  return (
+    <button class={klass} onClick={onClick}>
+      {title}
+      {children}
+    </button>
+  );
+}
+```
 
-## Navigation & Routing
-- Root: `/` (Home)
-- Todo: `/todo`
-- SQL Explorer: `/sql`
-- User Profile: `/user/profile`
-- Session Management: `/user/session`
+## API Integration
+
+### SqlController Response
+```typescript
+interface SqlResult {
+  rows: Record<string, unknown>[];
+  columns: string[];
+  columnTypes: Map<string, string>;  // e.g., "VARCHAR", "TIMESTAMP"
+}
+```
+
+Frontend uses `columnTypes` to format cells (e.g., TimestampTooltip for timestamps).
+
+### 2. Centralized `apiClient`
+**ALWAYS** use the centralized `apiClient` from `src/utils/api.ts` for all network requests.
+
+```typescript
+// Standard usage
+const data = await apiClient("/todo", {
+  method: "POST",
+  body: JSON.stringify(payload)
+});
+
+if (data.status === ApiStatus.SUCCESS) {
+  // Use data.details
+}
+```
+
+It automatically handles:
+- Base URL (`VITE_API_URL`)
+- Authorization headers from `authBase.ts`
+- Standardized JSON parsing with fallbacks
+- `ApiResponse` structure validation
+
+### 3. Data Modals & Details
+Use `DataModal.tsx` for displaying detailed record information.
+- **Standard Columns**: Pass a list of keys to display.
+- **Custom Footer**: Use the `footer` prop for action buttons (e.g., Delete, Complete).
+- **Nested Data**: If the API response is nested (like error details), use a flattening utility before passing `data` to the modal to ensure all fields are visible.
+
+### 4. Interactive Shortcuts
+- **SQL Explorer**: Support `Ctrl+Enter` for immediate query execution. Inform users with a label near the textarea.
+
+### 5. Navigation Refresh
+- Support re-navigating to the current page by clicking the active menu item.
+- Implementation: `Navigation.tsx` calls `onRefreshRoute` (via `App.tsx` state) to increment a `routeKey`, forcing a component re-mount.
+
+## Known Non-Blocking Warnings
+
+| Warning | Cause | Action |
+|---------|-------|--------|
+| CSS `@theme` warnings in IDE | Old CSS parser | Ignore, verify build instead |
+| `RepoTest.log` unused | Left for debugging | Ignore |
+
+## File Locations Quick Reference
+
+| Item | Path |
+|------|------|
+| Main entry | `backend/src/main/java/com/example/todo/Main.java` |
+| Controllers | `backend/src/main/java/com/example/todo/*Controller.java` |
+| Migrations | `backend/src/main/resources/db/migration/V*.sql` |
+| Frontend routes | `frontend/src/routes/*.tsx` |
+| UI components | `frontend/src/components/ui/*.tsx` |
+| Animations | `frontend/src/components/animations/*.tsx` |
+| Stores | `frontend/src/stores/*.ts` |
+| Themes | `frontend/src/styles/themes/*.css` |
+
+## Routes
+
+| Path | Component | Description |
+|------|-----------|-------------|
+| `/` | `routes/index.tsx` | Home page |
+| `/todo` | `routes/todo.tsx` | Todo management |
+| `/sql` | `routes/sql.tsx` | SQL explorer |
+| `/errors` | `routes/errors.tsx` | Error demo |
+| `/500` | `routes/500.tsx` | Server error |
+| `...404` | `routes/[...404].tsx` | Catch-all 404 |
+
+## Formatting Standards
+
+**ALWAYS** adhere to these formatting rules for both frontend and backend code:
+- **Indent Size**: 2 spaces
+- **Wrap Size**: 120 characters
+- **Import Management**:
+  - Remove all unused imports.
+  - Reorganize and sort imports (Alphabetical order, grouped by package: standard, third-party, project-specific).

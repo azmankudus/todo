@@ -20,19 +20,26 @@ dependencies {
   annotationProcessor(libs.micronaut.validation.processor)
   annotationProcessor(libs.micronaut.openapi.processor)
   annotationProcessor(libs.logback.classic)
+  annotationProcessor(libs.micronaut.security.annotations)
+  annotationProcessor(libs.mapstruct.processor)
   
+  implementation(libs.micronaut.security.jwt)
+  implementation(libs.micronaut.reactor)
   implementation(libs.micronaut.serde.jackson)
   implementation(libs.micronaut.validation)
   implementation(libs.micronaut.data.jdbc)
   implementation(libs.micronaut.jdbc.hikari)
   implementation(libs.micronaut.flyway)
   implementation(libs.micronaut.management)
+  implementation(libs.micronaut.cache.caffeine)
   implementation(libs.micronaut.tracing.opentelemetry.http)
   implementation(libs.opentelemetry.exporter.otlp)
+  implementation(libs.bcrypt)
+  implementation(libs.mapstruct)
+  implementation(libs.java.uuid.generator)
   
-  runtimeOnly(libs.duckdb.jdbc)
+  runtimeOnly(libs.h2)
   runtimeOnly(libs.flyway.core)
-  runtimeOnly(libs.flyway.database.duckdb)
 
   compileOnly(libs.micronaut.http.client)
   compileOnly(libs.micronaut.openapi.annotations)
@@ -64,7 +71,7 @@ micronaut {
   testRuntime("junit5")
   processing {
     incremental(true)
-    annotations("com.example.todo.*")
+    annotations("com.example.todo.**")
   }
   aot {
     // Please review carefully the optimizations enabled below
@@ -113,7 +120,8 @@ val testFrontend = tasks.register<Exec>("testFrontend") {
   commandLine("bun", "run", "test")
 }
 
-tasks.named("test") {
+tasks.named<Test>("test") {
   dependsOn(testFrontend)
+  maxParallelForks = 1
 }
 

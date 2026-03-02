@@ -8,6 +8,7 @@ import { backgrounds } from "./components/ui/Backgrounds";
 import { LoadingAnimation } from "./components/ui/LoadingAnimation";
 import { loadingState, showLoading, hideLoading } from "./stores/loadingStore";
 import { CONFIG, getStorageKey } from "./config";
+import { initializeAuth, user, isAuthenticated } from "./stores/authStore";
 import "./app.css";
 
 export default function App() {
@@ -16,6 +17,8 @@ export default function App() {
   const [backgroundTheme, setBackgroundTheme] = createSignal(CONFIG.background);
   const [routeKey, setRouteKey] = createSignal(0);
   const refreshRoute = () => setRouteKey(k => k + 1);
+
+  initializeAuth();
 
   onMount(() => {
     const saved = localStorage.getItem(getStorageKey("theme"));
@@ -65,10 +68,13 @@ export default function App() {
     localStorage.setItem(getStorageKey("backgroundTheme"), bg);
   };
 
-  const navItems = [
+  const navItems = () => [
     { href: "/", label: "Home" },
-    { href: "/todo", label: "Todo" },
-    { href: "/sql", label: "SQL" }
+    ...((!CONFIG.securityEnabled || isAuthenticated()) ? [
+      { href: "/todo", label: "Tasks" },
+      { href: "/sql", label: "SQL" }
+    ] : []),
+    { href: "/errors", label: "Errors" }
   ];
 
   return (
@@ -100,7 +106,7 @@ export default function App() {
             </div>
 
             <Navigation
-              items={navItems}
+              items={navItems()}
               theme={theme()}
               onToggleTheme={toggleTheme}
               colorTheme={colorTheme()}
@@ -109,6 +115,7 @@ export default function App() {
               onChangeBackgroundTheme={changeBackgroundTheme}
               onRefreshRoute={refreshRoute}
               brand="Todo"
+              user={user()}
             />
             <Suspense fallback={
               <div class="flex items-center justify-center p-12 grow">

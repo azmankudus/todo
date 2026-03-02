@@ -1,5 +1,5 @@
 import { createSignal, onMount, onCleanup, For, Show } from "solid-js";
-import { ChevronDown } from "lucide-solid";
+import { TbOutlineChevronDown } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
 
 export const PRIORITIES = [
@@ -68,7 +68,7 @@ export function PrioritySelect(props: { value: number; onChange: (v: number) => 
           priority={selected().value}
           format="short"
         />
-        <ChevronDown size={16} class="text-slate-400" />
+        <TbOutlineChevronDown size={16} class="text-slate-400" />
       </button>
 
       <Show when={isOpen()}>

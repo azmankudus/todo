@@ -2,7 +2,11 @@
 plugin-micronaut = "4.6.2"
 plugin-shadow = "8.3.9"
 duckdb = "1.4.4.0"
-flyway-duckdb = "10.24.0"
+bcrypt = "0.10.2"
+h2 = "2.3.232"
+mapstruct = "1.6.3"
+uuid-generator = "5.2.0"
+
 
 [libraries]
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
@@ -19,12 +23,20 @@ micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processo
 micronaut-jdbc-hikari = { module = "io.micronaut.sql:micronaut-jdbc-hikari" }
 micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway" }
 flyway-core = { module = "org.flywaydb:flyway-core" }
-flyway-database-duckdb = { module = "org.flywaydb:flyway-database-duckdb", version.ref = "flyway-duckdb" }
+micronaut-cache-caffeine = { module = "io.micronaut.cache:micronaut-cache-caffeine" }
 micronaut-management = { module = "io.micronaut:micronaut-management" }
 micronaut-openapi-annotations = { module = "io.micronaut.openapi:micronaut-openapi-annotations" }
 micronaut-openapi-processor = { module = "io.micronaut.openapi:micronaut-openapi" }
 micronaut-tracing-opentelemetry-http = { module = "io.micronaut.tracing:micronaut-tracing-opentelemetry-http" }
 opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
+micronaut-security-annotations = { module = "io.micronaut.security:micronaut-security-annotations" }
+micronaut-security-jwt = { module = "io.micronaut.security:micronaut-security-jwt" }
+micronaut-reactor = { module = "io.micronaut.reactor:micronaut-reactor" }
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+java-uuid-generator = { module = "com.fasterxml.uuid:java-uuid-generator", version.ref = "uuid-generator" }
 
 [plugins]
 micronaut-application = { id = "io.micronaut.application", version.ref = "plugin-micronaut" }

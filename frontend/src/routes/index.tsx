@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { SquareCheck, Database, ArrowRight, Sun } from "lucide-solid";
+import { TbOutlineSquareCheck, TbOutlineDatabase, TbOutlineArrowRight, TbOutlineSun } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
 import { Button } from "../components/ui/Button";
 
@@ -17,7 +17,7 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.2, easing: "ease-out" }}
           class="inline-flex items-center justify-center p-3 mb-6 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-500 transition-colors"
         >
-          <SquareCheck size={48} />
+          <TbOutlineSquareCheck size={48} />
         </Motion.div>
         <h1 class="text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-6 transition-colors">
           Organize your life with <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-400 dark:to-secondary-400 transition-all">Todo Vibe</span>
@@ -29,13 +29,13 @@ export default function Home() {
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <A href="/todo">
-            <Button size="lg" class="px-8 shadow-lg shadow-primary-500/30 bg-gradient-to-r from-primary-600 to-secondary-500 border-0">
-              Get Started <ArrowRight class="ml-2" size={20} />
+            <Button size="lg" class="px-8 shadow-lg shadow-primary-500/30 bg-gradient-to-r from-primary-600 to-secondary-500 border-0" icon={<TbOutlineArrowRight size={20} />}>
+              Get Started
             </Button>
           </A>
           <A href="/sql">
-            <Button variant="outline" size="lg" class="px-8 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <Database class="mr-2 text-slate-500" size={20} /> SQL Explorer
+            <Button variant="outline" size="lg" class="px-8 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" icon={<TbOutlineDatabase size={20} />}>
+              SQL Explorer
             </Button>
           </A>
         </div>
@@ -43,9 +43,9 @@ export default function Home() {
 
       <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { icon: SquareCheck, title: "Task Management", desc: "Streamlined interface for creating and managing your daily tasks with ease.", bgFrom: "from-primary-600", bgTo: "to-secondary-500", shadow: "shadow-primary-500/20" },
-          { icon: Sun, title: "Adaptive Theme", desc: "Seamlessly switch between Light and Dark modes to suit your work environment.", bgFrom: "from-pink-500", bgTo: "to-rose-400", shadow: "shadow-pink-500/20" },
-          { icon: Database, title: "SQL Power", desc: "Advanced users can query the underlying DuckDB database directly using raw SQL.", bgFrom: "from-emerald-500", bgTo: "to-secondary-400", shadow: "shadow-emerald-500/20" }
+          { icon: TbOutlineSquareCheck, title: "Task Management", desc: "Streamlined interface for creating and managing your daily tasks with ease.", bgFrom: "from-primary-600", bgTo: "to-secondary-500", shadow: "shadow-primary-500/20" },
+          { icon: TbOutlineSun, title: "Adaptive Theme", desc: "Seamlessly switch between Light and Dark modes to suit your work environment.", bgFrom: "from-pink-500", bgTo: "to-rose-400", shadow: "shadow-pink-500/20" },
+          { icon: TbOutlineDatabase, title: "SQL Power", desc: "Advanced users can query the underlying DuckDB database directly using raw SQL.", bgFrom: "from-emerald-500", bgTo: "to-secondary-400", shadow: "shadow-emerald-500/20" }
         ].map((feature, i) => (
           <Motion.div
             initial={{ opacity: 0, y: 30 }}

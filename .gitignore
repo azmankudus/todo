@@ -3,6 +3,7 @@
 
 # Include root config and metadata files
 !/.gitignore
+!/.editorconfig
 !/build.gradle.kts
 !/settings.gradle.kts
 !/gradle.properties
@@ -22,15 +23,24 @@
 !/frontend/**
 
 # Build artifacts and caches within modules
-**/build/
 **/.gradle/
 **/.kotlin/
 **/.DS_Store/
-**/node_modules/
 **/.output/
 **/.vinxi/
 **/.nitro/
+**/.settings/
+**/.classpath/
+**/.project/
+**/.factorypath/
+**/.idea/
+**/.vscode/
 **/bin/
+**/build/
+**/target/
+**/out/
+**/dist/
+**/node_modules/
 **/*.class
 **/*.jar
 **/*.lock

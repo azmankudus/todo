@@ -4,37 +4,94 @@ import { Motion } from "solid-motionone";
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "solid" | "ghost" | "danger" | "soft" | "outline";
   size?: "sm" | "md" | "lg";
+  icon?: JSX.Element;
+  iconOnly?: boolean;
 }
 
 export function Button(props: ButtonProps) {
-  const [local, others] = splitProps(props, ["class", "variant", "size", "children"]);
+  const [local, others] = splitProps(props, ["class", "variant", "size", "children", "icon", "iconOnly"]);
 
-  const baseStyles = "inline-flex justify-center items-center gap-x-2 font-medium rounded-lg disabled:opacity-50 disabled:pointer-events-none transition-shadow";
+  const baseStyles = "inline-flex justify-center items-center font-medium rounded-lg disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 group cursor-pointer relative overflow-hidden";
 
-  const variants = {
-    solid: "bg-primary-600 text-white shadow-sm shadow-primary-500/20",
-    soft: "bg-primary-100 text-primary-800 dark:bg-primary-800/30 dark:text-primary-500",
-    ghost: "text-primary-600 dark:text-primary-500",
-    outline: "border border-gray-200 bg-white text-gray-800 shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-white",
-    danger: "bg-red-500/10 text-red-500"
+  const variants: Record<string, string> = {
+    solid: "bg-primary-600 text-white shadow-sm shadow-primary-500/20 hover:shadow-primary-500/40",
+    soft: "bg-primary-100 text-primary-800 dark:bg-primary-800/30 dark:text-primary-500 hover:bg-primary-200 dark:hover:bg-primary-800/50",
+    ghost: "text-primary-600 dark:text-primary-500 hover:bg-slate-100 dark:hover:bg-slate-800",
+    outline: "border border-gray-200 bg-white text-gray-800 shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800",
+    danger: "bg-red-500/10 text-red-500 hover:bg-red-500/20"
   };
 
-  const sizes = {
-    sm: "py-2 px-3 text-sm",
-    md: "py-3 px-4 text-sm",
-    lg: "p-4 sm:p-5 text-base"
+  const sizes: Record<string, string> = {
+    sm: "py-1.5 px-4 text-sm",
+    md: "py-2 px-6 text-sm",
+    lg: "py-3 px-8 text-base"
   };
+
+  // Minimum width for hover-reveal buttons so there's room for text + icon
+  const hoverRevealMin: Record<string, string> = {
+    sm: "min-w-28",
+    md: "min-w-32",
+    lg: "min-w-40"
+  };
+
+  // Inverted colors for the icon box
+  const iconBg: Record<string, string> = {
+    solid: "bg-white text-primary-600",
+    soft: "bg-primary-600 text-white dark:bg-primary-400 dark:text-slate-900",
+    ghost: "bg-primary-600 text-white dark:bg-primary-400 dark:text-slate-900",
+    outline: "bg-slate-800 text-white dark:bg-white dark:text-slate-900",
+    danger: "bg-red-500 text-white"
+  };
+
+  // Icon box width per size (matches button height for a square shape)
+  const iconWidth: Record<string, string> = {
+    sm: "group-hover:w-8",
+    md: "group-hover:w-10",
+    lg: "group-hover:w-12"
+  };
+
+  // Text shift per size (exactly half the icon width to maintain centering in remaining space)
+  const textShift: Record<string, string> = {
+    sm: "group-hover:-translate-x-4",
+    md: "group-hover:-translate-x-5",
+    lg: "group-hover:-translate-x-6"
+  };
+
+  const v = () => local.variant || "solid";
+  const s = () => local.size || "md";
+  const isIconOnly = () => local.iconOnly === true;
+  const hasHoverReveal = () => !isIconOnly() && !!local.icon;
 
   return (
     <Motion.button
-      hover={{ scale: 1.05 }}
-      press={{ scale: 0.95 }}
+      hover={{ scale: 1.02 }}
+      press={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}
-      class={`${baseStyles} ${variants[local.variant || "solid"]} ${sizes[local.size || "md"]} ${local.class || ""}`}
+      class={`${baseStyles} ${variants[v()]} ${sizes[s()]} ${hasHoverReveal() ? hoverRevealMin[s()] : ""} ${local.class || ""}`}
       {...others}
     >
-      {local.children}
+      {isIconOnly() ? (
+        <span class="inline-flex items-center justify-center">
+          {local.icon}
+        </span>
+      ) : hasHoverReveal() ? (
+        <>
+          {/* Text — shifts left to stay centered in the space not occupied by the icon */}
+          <span class={`inline-flex items-center justify-center gap-x-2 relative z-10 transition-transform duration-300 ease-out ${textShift[s()]}`}>
+            {local.children}
+          </span>
+          {/* Icon box — absolutely positioned on right, grows width from 0 to fill */}
+          <span
+            class={`absolute right-0 inset-y-0 flex items-center justify-center w-0 ${iconWidth[s()]} opacity-0 group-hover:opacity-100 ${iconBg[v()]} transition-[width,opacity] duration-300 ease-out overflow-hidden rounded-l-lg`}
+          >
+            {local.icon}
+          </span>
+        </>
+      ) : (
+        <span class="inline-flex items-center justify-center gap-x-2">
+          {local.children}
+        </span>
+      )}
     </Motion.button>
   );
 }
-

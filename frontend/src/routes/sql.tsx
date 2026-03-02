@@ -1,11 +1,13 @@
 import { createSignal, createEffect, on, Show } from "solid-js";
-import { Play, CircleAlert, Eraser } from "lucide-solid";
+import { ApiStatus } from "../domain/shared/ApiStatus";
 import { Presence, Motion } from "solid-motionone";
 import { Button } from "../components/ui/Button";
 import { DataTable } from "../components/ui/DataTable";
-import { RowDetailModal } from "../components/ui/RowDetailModal";
+import { DataModal } from "../components/ui/DataModal";
 import { showLoading, hideLoading } from "../stores/loadingStore";
 import { isWideMode } from "../stores/layoutStore";
+import { apiClient, ApiResponse } from "../utils/api";
+import { TbOutlinePlayerPlay, TbOutlineAlertCircle, TbOutlineEraser, TbOutlineTerminal } from "solid-icons/tb";
 
 const API_URL = import.meta.env.VITE_API_URL + "/sql";
 
@@ -16,10 +18,21 @@ const renderCell = (val: any, _type: string) => {
 
 export default function SqlPage() {
   const [runCount, setRunCount] = createSignal(0);
-  const [query, setQuery] = createSignal("select * from todo;");
+  const [query, setQuery] = createSignal("select * from tb_todo;");
   const [result, setResult] = createSignal<any>(null);
   const [isLoading, setIsLoading] = createSignal(false);
-  const [error, setError] = createSignal<string | null>(null);
+  const [errorResponse, setErrorResponse] = createSignal<ApiResponse | null>(null);
+  const [showErrorModal, setShowErrorModal] = createSignal(false);
+  const error = () => errorResponse()?.message || null;
+  const flattenedErrorResponse = () => {
+    const res = errorResponse();
+    if (!res) return null;
+    const { details, ...rest } = res;
+    return {
+      ...rest,
+      ...(details && typeof details === 'object' ? details : { details })
+    };
+  };
   const [selectedRow, setSelectedRow] = createSignal<any>(null);
   const [selectedRowNum, setSelectedRowNum] = createSignal(0);
   const [currentPage, setCurrentPage] = createSignal(1);
@@ -32,28 +45,26 @@ export default function SqlPage() {
     if (!query().trim()) return;
 
     setIsLoading(true);
-    setError(null);
-    showLoading("database", "Loading...");
-
+    setErrorResponse(null);
+    showLoading("database", "Executing Query...");
     try {
-      const response = await fetch(API_URL, {
+      const data = await apiClient("/sql", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: query(), page, size }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setResult(data);
-        } else {
-          setError(data.errorMessage || "An error occurred");
-        }
+      console.log("SQL Response data:", data);
+      if (data.status === ApiStatus.SUCCESS && data.details?.result) {
+        setResult(data.details.result);
       } else {
-        setError(`HTTP Error: ${response.status}`);
+        setErrorResponse(data);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to execute query");
+      setErrorResponse({
+        status: "ERROR",
+        message: err.message || "Failed to execute query",
+        details: err
+      } as any);
     } finally {
       setIsLoading(false);
       hideLoading();
@@ -98,19 +109,29 @@ export default function SqlPage() {
           onSubmit={executeQuery}
           class="flex flex-col gap-4"
         >
-          <textarea
-            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm font-mono min-h-[160px] resize-y focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none bg-white dark:bg-slate-800 border dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:focus:ring-slate-600 transition-colors shadow-sm"
-            placeholder="select * from todo;"
-            value={query()}
-            onInput={(e) => setQuery(e.currentTarget.value)}
-          />
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between px-1">
+              <label class="block text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">SQL Query</label>
+              <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700/50">Ctrl + Enter to execute</span>
+            </div>
+            <textarea
+              class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm font-mono min-h-[160px] resize-y focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none bg-white dark:bg-slate-800 border dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:focus:ring-slate-600 transition-colors shadow-sm"
+              placeholder="select * from todo;"
+              value={query()}
+              onInput={(e) => setQuery(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                  e.preventDefault();
+                  executeQuery(e);
+                }
+              }}
+            />
+          </div>
           <div class="flex gap-3 justify-center">
-            <Button type="submit" variant="solid" size="sm" class="shadow-md" disabled={isLoading()}>
-              <Play size={16} class="mr-1.5" />
+            <Button type="submit" variant="solid" size="sm" class="shadow-md" disabled={isLoading()} icon={<TbOutlinePlayerPlay size={16} />}>
               {isLoading() ? "Executing..." : "Execute"}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => { setQuery(''); setResult(null); setError(null); }}>
-              <Eraser size={16} class="mr-1.5" />
+            <Button type="button" variant="outline" size="sm" onClick={() => { setQuery(''); setResult(null); setErrorResponse(null); }} icon={<TbOutlineEraser size={16} />}>
               Clear
             </Button>
           </div>
@@ -123,10 +144,21 @@ export default function SqlPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              class="mt-4 flex items-center p-4 bg-red-100 border border-red-200 text-red-800 rounded-lg dark:bg-red-800/20 dark:border-red-900 dark:text-red-500 shadow-sm"
+              class="mt-4 flex items-center justify-between p-4 bg-red-100 border border-red-200 text-red-800 rounded-2xl dark:bg-red-800/20 dark:border-red-900 dark:text-red-500 shadow-sm"
             >
-              <CircleAlert size={20} class="mr-2 shrink-0" />
-              <p class="text-sm font-medium">{error()}</p>
+              <div class="flex items-center">
+                <TbOutlineAlertCircle size={20} class="mr-2 shrink-0" />
+                <p class="text-sm font-medium">{error()}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                class="ml-4 h-8 px-4 text-xs font-bold border-red-200 dark:border-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/40 text-red-700 dark:text-red-400 rounded-xl"
+                onClick={() => setShowErrorModal(true)}
+                icon={<TbOutlineTerminal size={14} />}
+              >
+                More Info
+              </Button>
             </Motion.div>
           </Show>
         </Presence>
@@ -142,7 +174,7 @@ export default function SqlPage() {
                   transition={{ duration: 0.4, easing: "ease-out" }}
                   class="mt-8 rounded-xl border border-gray-200 dark:border-slate-700 shadow-xl shadow-gray-200/50 dark:shadow-slate-950/50 bg-gray-50 dark:bg-slate-900 transition-colors"
                 >
-                  <Show when={result().columns && result().columns.length > 0} fallback={<div class="p-6 text-center text-gray-500 dark:text-slate-400">Query executed successfully with no results.</div>}>
+                  <Show when={result()?.columns?.length > 0} fallback={<div class="p-6 text-center text-gray-500 dark:text-slate-400">Query executed successfully with no results.</div>}>
                     <DataTable
                       columns={result().columns}
                       columnTypes={result().columnTypes}
@@ -167,14 +199,23 @@ export default function SqlPage() {
         </Show>
 
         {/* Row Detail Modal */}
-        <RowDetailModal
-          row={selectedRow()}
-          rowNum={selectedRowNum()}
+        <DataModal
+          data={selectedRow()}
+          num={selectedRowNum()}
           columns={result()?.columns || []}
           columnTypes={result()?.columnTypes}
           onClose={() => setSelectedRow(null)}
         />
+
+        {/* Error Detail Modal */}
+        <DataModal
+          data={showErrorModal() ? flattenedErrorResponse() : null}
+          columns={flattenedErrorResponse() ? Object.keys(flattenedErrorResponse()!) : []}
+          title="SQL Execution Error Details"
+          icon={<TbOutlineTerminal size={20} class="text-red-600 dark:text-red-400" />}
+          onClose={() => setShowErrorModal(false)}
+        />
       </div>
-    </main>
+    </main >
   );
 }
