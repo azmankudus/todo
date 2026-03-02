@@ -41,9 +41,6 @@ export function Modal(props: ModalProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) props.onClose();
-            }}
           >
             <Motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}

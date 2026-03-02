@@ -12,6 +12,7 @@ import { showLoading, hideLoading } from "../stores/loadingStore";
 import { isWideMode } from "../stores/layoutStore";
 import { apiClient } from "../utils/api";
 import { DataModal } from "../components/ui/DataModal";
+import { RESOURCES } from "../config/resources";
 
 interface Todo {
   id: number;
@@ -127,7 +128,7 @@ export default function TodoPage() {
           class="flex gap-x-3 mb-8 relative z-50"
         >
           <TextField
-            placeholder="What needs to be done?"
+            placeholder={RESOURCES.PLACEHOLDERS.TODO_TASK}
             value={inputValue()}
             onInput={(e) => setInputValue(e.currentTarget.value)}
             class="focus:ring-2 focus:ring-primary-500 dark:bg-slate-800 dark:text-white"

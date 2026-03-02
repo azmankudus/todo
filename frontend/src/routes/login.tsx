@@ -1,4 +1,5 @@
 import { createSignal, Show, For } from "solid-js";
+import { RESOURCES } from "../config/resources";
 import { useNavigate } from "@solidjs/router";
 import { Motion } from "solid-motionone";
 import { TextButton } from "../components/ui/TextButton";
@@ -6,7 +7,17 @@ import { TextField } from "../components/ui/TextField";
 import { login, register } from "../stores/authStore";
 import { showLoading, hideLoading } from "../stores/loadingStore";
 import { Modal } from "../components/ui/Modal";
-import { TbOutlineMail, TbOutlineLock, TbOutlineUser, TbOutlineArrowRight, TbOutlineBrandGithub, TbOutlineBrandChrome, TbOutlineShieldCheck, TbOutlineMailQuestion, TbOutlineCircleCheck, TbOutlineCloud, TbOutlineLayoutGrid, TbOutlineBrandApple, TbOutlineBrandSlack, TbOutlineMessageCircle, TbOutlineChevronLeft } from "solid-icons/tb";
+import { Tooltip } from "../components/ui/Tooltip";
+import {
+  TbOutlineMail, TbOutlineLock, TbOutlineUser, TbOutlineLogin2, TbOutlineShieldCheck,
+  TbOutlineMailQuestion, TbOutlineCircleCheck, TbOutlineCloud, TbOutlineChevronLeft,
+  TbOutlineBrandChrome, TbOutlineBrandWindows, TbOutlineBrandApple, TbOutlineBrandGithub,
+  TbOutlineBrandGitlab, TbOutlineBrandFacebook, TbOutlineBrandTwitter, TbOutlineBrandInstagram,
+  TbOutlineBrandTiktok, TbOutlineBrandLinkedin, TbOutlineBrandDiscord, TbOutlineBrandSlack,
+  TbOutlinePlus
+} from "solid-icons/tb";
+import { BsLockFill } from "solid-icons/bs";
+import { validatePasswordComplexity, PASSWORD_COMPLEXITY_MESSAGE, validateEmail, EMAIL_HINT } from "../utils/auth-config";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -21,26 +32,51 @@ export default function LoginPage() {
   const [username, setUsername] = createSignal("");
   const [email, setEmail] = createSignal("");
   const [fullname, setFullname] = createSignal("");
-  const [confirmPassword, setConfirmPassword] = createSignal("");
   const [rememberMe, setRememberMe] = createSignal(false);
+  const [errors, setErrors] = createSignal<Record<string, string>>({});
+  const [isPasswordFocused, setIsPasswordFocused] = createSignal(false);
+  const [isIdentityFocused, setIsIdentityFocused] = createSignal(false);
+  const [isEmailRegFocused, setIsEmailRegFocused] = createSignal(false);
+  const [isEmailForgotFocused, setIsEmailForgotFocused] = createSignal(false);
+
+  const clearError = (field: string) => {
+    setErrors(prev => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const showErrors = (newErrors: Record<string, string>) => {
+    setErrors(newErrors);
+  };
 
   const resetForm = () => {
     setError(null);
+    setErrors({});
     setSuccess(null);
     setIdentity("");
     setEmail("");
     setUsername("");
     setPassword("");
     setFullname("");
-    setConfirmPassword("");
   };
 
   const handleLogin = async (e: Event) => {
     e.preventDefault();
-    setError(null);
+    const newErrors: Record<string, string> = {};
+    if (!identity()) newErrors.identity = "Required";
+    if (!password()) newErrors.password = "Required";
 
-    if (!identity() || !password()) {
-      setError("Please fill in all fields");
+    if (Object.keys(newErrors).length > 0) {
+      showErrors(newErrors);
+      return;
+    }
+
+    // If it looks like an email, validate format
+    if (identity().includes('@') && !validateEmail(identity())) {
+      showErrors({ identity: "Invalid format" });
       return;
     }
 
@@ -51,26 +87,30 @@ export default function LoginPage() {
     if (result.success) {
       navigate("/todo", { replace: true });
     } else {
-      setError(result.error || "Login failed");
+      showErrors({ identity: result.error || "Login failed" });
     }
   };
 
   const handleRegister = async (e: Event) => {
     e.preventDefault();
-    setError(null);
+    const newErrors: Record<string, string> = {};
+    if (!username()) newErrors.username = "Required";
+    if (!fullname()) newErrors.fullname = "Required";
+    if (!email()) newErrors.email_reg = "Required";
+    if (!password()) newErrors.password_reg = "Required";
 
-    if (!email() || !username() || !fullname() || !password() || !confirmPassword()) {
-      setError("Please fill in all fields");
+    if (Object.keys(newErrors).length > 0) {
+      showErrors(newErrors);
       return;
     }
 
-    if (password() !== confirmPassword()) {
-      setError("Passwords do not match");
+    if (!validateEmail(email())) {
+      showErrors({ email_reg: "Invalid format" });
       return;
     }
 
-    if (password().length < 6) {
-      setError("Password must be at least 6 characters");
+    if (!validatePasswordComplexity(password())) {
+      showErrors({ password_reg: PASSWORD_COMPLEXITY_MESSAGE });
       return;
     }
 
@@ -82,16 +122,19 @@ export default function LoginPage() {
       setIsRegisterOpen(false);
       navigate("/todo", { replace: true });
     } else {
-      setError(result.error || "Registration failed");
+      showErrors({ username: result.error || "Registration failed" });
     }
   };
 
   const handleForgotPassword = async (e: Event) => {
     e.preventDefault();
-    setError(null);
-
     if (!email()) {
-      setError("Please enter your email address");
+      showErrors({ email_forgot: "Required" });
+      return;
+    }
+
+    if (!validateEmail(email())) {
+      showErrors({ email_forgot: "Invalid format" });
       return;
     }
 
@@ -103,11 +146,17 @@ export default function LoginPage() {
 
   const oauthProviders = [
     { name: "Google", color: "bg-[#4285F4] hover:bg-[#357AE8]", icon: TbOutlineBrandChrome },
-    { name: "GitHub", color: "bg-[#24292F] hover:bg-[#1A1E22]", icon: TbOutlineBrandGithub },
-    { name: "Microsoft", color: "bg-[#00A4EF] hover:bg-[#008AD8]", icon: TbOutlineLayoutGrid },
+    { name: "Microsoft", color: "bg-[#0078D4] hover:bg-[#005A9E]", icon: TbOutlineBrandWindows },
     { name: "Apple", color: "bg-[#000000] hover:bg-[#111111]", icon: TbOutlineBrandApple },
+    { name: "GitHub", color: "bg-[#24292F] hover:bg-[#1A1E22]", icon: TbOutlineBrandGithub },
+    { name: "GitLab", color: "bg-[#E24329] hover:bg-[#B13521]", icon: TbOutlineBrandGitlab },
+    { name: "Facebook", color: "bg-[#1877F2] hover:bg-[#0D65D9]", icon: TbOutlineBrandFacebook },
+    { name: "X", color: "bg-[#000000] hover:bg-[#111111]", icon: TbOutlineBrandTwitter },
+    { name: "Instagram", color: "bg-[#E4405F] hover:bg-[#D62976]", icon: TbOutlineBrandInstagram },
+    { name: "TikTok", color: "bg-[#000000] hover:bg-[#111111]", icon: TbOutlineBrandTiktok },
+    { name: "LinkedIn", color: "bg-[#0077B5] hover:bg-[#005E93]", icon: TbOutlineBrandLinkedin },
+    { name: "Discord", color: "bg-[#5865F2] hover:bg-[#4752C4]", icon: TbOutlineBrandDiscord },
     { name: "Slack", color: "bg-[#4A154B] hover:bg-[#3D113E]", icon: TbOutlineBrandSlack },
-    { name: "Discord", color: "bg-[#5865F2] hover:bg-[#4752C4]", icon: TbOutlineMessageCircle },
   ];
 
   return (
@@ -120,36 +169,34 @@ export default function LoginPage() {
       >
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           {/* Form Header (Static) */}
-          <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800/50 flex flex-col items-center justify-center text-center gap-1 z-30 relative bg-white dark:bg-slate-900">
-            <h1 class="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Welcome</h1>
-            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Please sign in with your preferred option</p>
+          <div class="px-8 pt-10 pb-0 flex flex-col items-center justify-center text-center z-30 relative bg-white dark:bg-slate-900 gap-4">
+            <BsLockFill size={64} class="text-primary-600 dark:text-primary-500 transition-all duration-300" />
+            <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Please sign in with your preferred option</p>
           </div>
 
           {/* Sliding "Stage" Viewport */}
-          <div class="relative overflow-hidden w-full h-[500px]">
+          <div class="relative overflow-hidden w-full h-[420px]">
             <Motion.div
               animate={{ x: authMethod() === null ? "0%" : "-50%" }}
               transition={{ duration: 0.7, easing: [0.16, 1, 0.3, 1] }}
               class="flex w-[200%] h-full flex-row items-stretch"
             >
               {/* Panel 1: Auth Options (Centered stage) */}
-              <div class="w-1/2 p-10 flex-shrink-0 flex flex-col justify-center space-y-6">
-                <div class="grid grid-cols-2 gap-3">
+              <div class="w-1/2 p-10 flex-shrink-0 flex flex-col justify-center space-y-4">
+                <div class="flex flex-col gap-3">
                   <TextButton
                     variant="outline"
-                    class="!rounded-xl !py-4 border shadow-none font-bold text-[10px] uppercase tracking-wider"
+                    class="w-full !rounded-xl !py-4 border shadow-none font-bold text-sm uppercase tracking-wider"
                     icon={<TbOutlineCloud size={18} />}
                   >
                     Enterprise SSO
                   </TextButton>
                   <TextButton
                     variant="outline"
-                    class="!rounded-xl !py-4 border shadow-none font-bold text-[10px] uppercase tracking-wider"
+                    class="w-full !rounded-xl !py-4 border shadow-none font-bold text-sm uppercase tracking-wider"
+                    icon={<TbOutlineShieldCheck size={18} />}
                   >
-                    <div class="flex items-center gap-2">
-                      <TbOutlineShieldCheck size={18} />
-                      <span>AD Sign In</span>
-                    </div>
+                    Active Directory
                   </TextButton>
                 </div>
 
@@ -159,14 +206,14 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div class="flex items-center justify-center gap-3">
+                <div class="flex items-center justify-center gap-2.5 flex-wrap px-2">
                   <For each={oauthProviders}>
                     {(provider) => (
                       <button
                         title={provider.name}
-                        class={`${provider.color} text-white p-3 rounded-xl transition-all hover:scale-110 active:scale-95 shadow-sm`}
+                        class={`${provider.color} text-white p-2.5 rounded-xl transition-all hover:scale-110 active:scale-95 shadow-sm border border-black/10`}
                       >
-                        <provider.icon size={20} />
+                        <provider.icon size={18} />
                       </button>
                     )}
                   </For>
@@ -181,7 +228,7 @@ export default function LoginPage() {
                 <TextButton
                   onClick={() => setAuthMethod('classic')}
                   variant="outline"
-                  class="w-full !rounded-xl !py-4 border shadow-none font-bold"
+                  class="w-full !rounded-xl !py-4 border shadow-none font-bold text-sm uppercase tracking-wider"
                   icon={<TbOutlineUser size={18} />}
                 >
                   Username / Email
@@ -190,26 +237,20 @@ export default function LoginPage() {
 
               {/* Panel 2: Credentials Form (Top aligned inside stage) */}
               <div class="w-1/2 p-10 flex-shrink-0 flex flex-col justify-center space-y-6">
-                <Show when={error()}>
-                  <Motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl text-red-600 dark:text-red-400 text-sm font-bold flex items-center gap-3"
-                  >
-                    <div class="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    {error()}
-                  </Motion.div>
-                </Show>
 
-                <form onSubmit={handleLogin} class="space-y-5">
+                <form onSubmit={handleLogin} class="space-y-5" novalidate>
                   <div class="space-y-2">
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest ml-1">Username or Email</label>
-                    <TextField
-                      placeholder="john.doe or name@company.com"
-                      value={identity()}
-                      onInput={(e) => setIdentity(e.currentTarget.value)}
-                      class="!py-4 !rounded-xl"
-                    />
+                    <Tooltip active={!!errors().identity || isIdentityFocused()} content={errors().identity || EMAIL_HINT} variant={errors().identity ? "error" : "default"}>
+                      <TextField
+                        placeholder={`${RESOURCES.PLACEHOLDERS.IDENTITY} or ${RESOURCES.PLACEHOLDERS.EMAIL}`}
+                        value={identity()}
+                        onInput={(e) => { setIdentity(e.currentTarget.value); clearError('identity'); }}
+                        onFocus={() => setIsIdentityFocused(true)}
+                        onBlur={() => setIsIdentityFocused(false)}
+                        class="!py-4 !rounded-xl"
+                      />
+                    </Tooltip>
                   </div>
 
                   <div class="space-y-2">
@@ -223,13 +264,15 @@ export default function LoginPage() {
                         Forgot?
                       </button>
                     </div>
-                    <TextField
-                      type="password"
-                      placeholder="••••••••••••"
-                      value={password()}
-                      onInput={(e) => setPassword(e.currentTarget.value)}
-                      class="!py-4 !rounded-xl"
-                    />
+                    <Tooltip active={!!errors().password} content={errors().password} variant="error">
+                      <TextField
+                        type="password"
+                        placeholder={RESOURCES.PLACEHOLDERS.PASSWORD_LOGIN}
+                        value={password()}
+                        onInput={(e) => { setPassword(e.currentTarget.value); clearError('password'); }}
+                        class="!py-4 !rounded-xl"
+                      />
+                    </Tooltip>
                   </div>
 
                   <div class="flex items-center pb-1">
@@ -245,7 +288,7 @@ export default function LoginPage() {
                   </div>
 
                   <div class="space-y-4 pt-1">
-                    <TextButton type="submit" class="w-full !rounded-2xl !py-4 text-base font-black shadow-lg shadow-primary-500/20" icon={<TbOutlineArrowRight size={20} />}>
+                    <TextButton type="submit" class="w-full !rounded-2xl !py-4 text-base font-black shadow-lg shadow-primary-500/20" icon={<TbOutlineLogin2 size={20} />}>
                       Sign In
                     </TextButton>
 
@@ -262,7 +305,7 @@ export default function LoginPage() {
                         onClick={() => { resetForm(); setIsRegisterOpen(true); }}
                         class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-primary-500 transition-colors"
                       >
-                        Create
+                        REGISTER
                       </button>
                     </div>
                   </div>
@@ -277,74 +320,68 @@ export default function LoginPage() {
       <Modal
         isOpen={isRegisterOpen()}
         onClose={() => setIsRegisterOpen(false)}
-        title="Create Identity"
+        title="New User"
         icon={<TbOutlineUser size={22} />}
         class="!max-w-[500px]"
       >
-        <Show when={error()}>
-          <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-2xl text-red-600 dark:text-red-400 text-sm font-bold flex items-center gap-3">
-            <div class="w-1.5 h-1.5 rounded-full bg-red-500" />
-            {error()}
-          </div>
-        </Show>
 
-        <form onSubmit={handleRegister} class="space-y-6">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Username</label>
+        <form onSubmit={handleRegister} class="space-y-6" novalidate>
+          <div class="space-y-2">
+            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+            <Tooltip active={!!errors().fullname} content={errors().fullname} variant="error">
               <TextField
-                placeholder="johndoe"
-                value={username()}
-                onInput={(e) => setUsername(e.currentTarget.value)}
-                class="!rounded-xl !py-3"
-              />
-            </div>
-            <div class="space-y-2">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-              <TextField
-                placeholder="John Doe"
+                placeholder={RESOURCES.PLACEHOLDERS.FULLNAME}
                 value={fullname()}
-                onInput={(e) => setFullname(e.currentTarget.value)}
+                onInput={(e) => { setFullname(e.currentTarget.value); clearError('fullname'); }}
                 class="!rounded-xl !py-3"
               />
-            </div>
+            </Tooltip>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Username</label>
+            <Tooltip active={!!errors().username} content={errors().username} variant="error">
+              <TextField
+                placeholder={RESOURCES.PLACEHOLDERS.USERNAME}
+                value={username()}
+                onInput={(e) => { setUsername(e.currentTarget.value); clearError('username'); }}
+                class="!rounded-xl !py-3"
+              />
+            </Tooltip>
           </div>
 
           <div class="space-y-2">
             <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Email</label>
-            <TextField
-              type="email"
-              placeholder="name@company.com"
-              value={email()}
-              onInput={(e) => setEmail(e.currentTarget.value)}
-              class="!rounded-xl !py-3"
-            />
+            <Tooltip active={!!errors().email_reg || isEmailRegFocused()} content={errors().email_reg || EMAIL_HINT} variant={errors().email_reg ? "error" : "default"}>
+              <TextField
+                type="email"
+                placeholder={RESOURCES.PLACEHOLDERS.EMAIL}
+                value={email()}
+                onInput={(e) => { setEmail(e.currentTarget.value); clearError('email_reg'); }}
+                onFocus={() => setIsEmailRegFocused(true)}
+                onBlur={() => setIsEmailRegFocused(false)}
+                class="!rounded-xl !py-3"
+              />
+            </Tooltip>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Password</label>
+          <div class="space-y-2">
+            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Password</label>
+            <Tooltip active={!!errors().password_reg || isPasswordFocused()} content={errors().password_reg || PASSWORD_COMPLEXITY_MESSAGE} variant={errors().password_reg ? "error" : "default"}>
               <TextField
                 type="password"
-                placeholder="••••••••"
+                placeholder={RESOURCES.PLACEHOLDERS.PASSWORD_REGISTER}
                 value={password()}
-                onInput={(e) => setPassword(e.currentTarget.value)}
+                onInput={(e) => { setPassword(e.currentTarget.value); clearError('password_reg'); }}
+                onFocus={() => setIsPasswordFocused(true)}
+                onBlur={() => setIsPasswordFocused(false)}
                 class="!rounded-xl !py-3"
               />
-            </div>
-            <div class="space-y-2">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Confirm</label>
-              <TextField
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword()}
-                onInput={(e) => setConfirmPassword(e.currentTarget.value)}
-                class="!rounded-xl !py-3"
-              />
-            </div>
+            </Tooltip>
           </div>
-          <TextButton type="submit" class="w-full !rounded-2xl !py-4 font-black text-base shadow-xl shadow-primary-500/20" icon={<TbOutlineArrowRight size={20} />}>
-            Establish Account
+
+          <TextButton type="submit" class="w-full !rounded-2xl !py-4 font-black text-base shadow-xl shadow-primary-500/20" icon={<TbOutlinePlus size={20} />}>
+            Register
           </TextButton>
         </form>
       </Modal>
@@ -356,25 +393,24 @@ export default function LoginPage() {
         title="Forgot Password"
         icon={<TbOutlineMailQuestion size={22} />}
       >
-        <Show when={error()}>
-          <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-2xl text-red-600 dark:text-red-400 text-sm font-bold">
-            {error()}
-          </div>
-        </Show>
 
         <Show when={success()} fallback={
-          <form onSubmit={handleForgotPassword} class="space-y-6">
+          <form onSubmit={handleForgotPassword} class="space-y-6" novalidate>
             <div class="space-y-4">
               <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                 Enter your registered email to proceed with account recovery process
               </p>
-              <TextField
-                type="email"
-                placeholder="name@company.com"
-                value={email()}
-                onInput={(e) => setEmail(e.currentTarget.value)}
-                class="!rounded-xl !py-4"
-              />
+              <Tooltip active={!!errors().email_forgot || isEmailForgotFocused()} content={errors().email_forgot || EMAIL_HINT} variant={errors().email_forgot ? "error" : "default"}>
+                <TextField
+                  type="email"
+                  placeholder={RESOURCES.PLACEHOLDERS.EMAIL}
+                  value={email()}
+                  onInput={(e) => { setEmail(e.currentTarget.value); clearError('email_forgot'); }}
+                  onFocus={() => setIsEmailForgotFocused(true)}
+                  onBlur={() => setIsEmailForgotFocused(false)}
+                  class="!rounded-xl !py-4"
+                />
+              </Tooltip>
             </div>
             <TextButton type="submit" class="w-full !rounded-2xl !py-4 font-black shadow-lg shadow-primary-500/20" icon={<TbOutlineMail size={20} />}>
               Submit

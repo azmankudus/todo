@@ -7,6 +7,7 @@ import { Navigation } from "./components/ui/Navigation";
 import { backgrounds } from "./components/ui/Backgrounds";
 import { LoadingAnimation } from "./components/ui/LoadingAnimation";
 import { loadingState, showLoading, hideLoading } from "./stores/loadingStore";
+import { GlobalErrorModal } from "./components/ui/GlobalErrorModal";
 import { CONFIG, getStorageKey } from "./config";
 import { initializeAuth, user, isAuthenticated } from "./stores/authStore";
 import "./app.css";
@@ -74,7 +75,7 @@ export default function App() {
       { href: "/todo", label: "Tasks" },
       { href: "/sql", label: "SQL" }
     ] : []),
-    { href: "/errors", label: "Errors" }
+    { href: "/error", label: "Error" }
   ];
 
   return (
@@ -142,6 +143,8 @@ export default function App() {
                 </div>
               )}
             </Show>
+
+            <GlobalErrorModal />
 
             <ScrollToTop />
           </div>

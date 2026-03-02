@@ -1,7 +1,7 @@
 import { JSX, splitProps, createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { A, useLocation } from "@solidjs/router";
-import { TbOutlineMenu2, TbOutlineX, TbOutlineSquareCheck, TbOutlineSun, TbOutlineMoon, TbOutlinePalette, TbOutlinePhoto as ImageIcon, TbOutlineMaximize, TbOutlineMinimize, TbOutlineArrowRight, TbOutlineLogout } from "solid-icons/tb";
+import { TbOutlineMenu2, TbOutlineX, TbOutlineSquareCheck, TbOutlineSun, TbOutlineMoon, TbOutlinePalette, TbOutlinePhoto as ImageIcon, TbOutlineMaximize, TbOutlineMinimize, TbOutlineLogin2, TbOutlineLogout } from "solid-icons/tb";
 import { isWideMode, toggleWideMode } from "../../stores/layoutStore";
 import { user, logout, User } from "../../stores/authStore";
 import { TextButton } from "./TextButton";
@@ -257,7 +257,7 @@ export function Navigation(props: NavigationProps) {
                     variant="solid"
                     size="sm"
                     class="rounded-xl px-4"
-                    icon={<TbOutlineArrowRight size={16} />}
+                    icon={<TbOutlineLogin2 size={16} />}
                   >
                     Sign In
                   </TextButton>

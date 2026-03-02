@@ -20,8 +20,7 @@ export const ALL_ROUTES = Object.keys(modules)
 export const UNPROTECTED_ROUTES = [
   "/",
   "/login",
-  "/errors",
-  "/500",
+  "/error",
   "/404"
 ];
 

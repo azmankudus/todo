@@ -8,6 +8,7 @@ import { showLoading, hideLoading } from "../stores/loadingStore";
 import { isWideMode } from "../stores/layoutStore";
 import { apiClient, ApiResponse } from "../utils/api";
 import { TbOutlinePlayerPlay, TbOutlineAlertCircle, TbOutlineEraser, TbOutlineTerminal } from "solid-icons/tb";
+import { RESOURCES } from "../config/resources";
 
 const API_URL = import.meta.env.VITE_API_URL + "/sql";
 
@@ -116,7 +117,7 @@ export default function SqlPage() {
             </div>
             <textarea
               class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm font-mono min-h-[160px] resize-y focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none bg-white dark:bg-slate-800 border dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:focus:ring-slate-600 transition-colors shadow-sm"
-              placeholder="select * from todo;"
+              placeholder={RESOURCES.PLACEHOLDERS.SQL_QUERY}
               value={query()}
               onInput={(e) => setQuery(e.currentTarget.value)}
               onKeyDown={(e) => {

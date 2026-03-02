@@ -9,31 +9,34 @@ import { isWideMode } from "../../stores/layoutStore";
 import { DataModal } from "./DataModal";
 import { ApiStatus } from "../../domain/shared/ApiStatus";
 
-import { apiClient, ApiResponse } from "../../utils/api";
+import { ApiResponse } from "../../domain/shared/ApiResponse";
+import { fetchErrorInfo } from "../../services/errorService";
+import { errorStore } from "../../stores/errorStore";
+import { calculateClientDuration } from "../../utils/timeUtils";
 
 interface ErrorLayoutProps {
   code: string | number;
+  isGlobalModal?: boolean;
 }
-
-const fetchErrorInfo = async (code: string | number) => {
-  if (!code) return null;
-  const numCode = Number(code);
-  if (isNaN(numCode)) return null;
-
-  try {
-    const data = await apiClient(`/error/${numCode}`);
-    return data;
-  } catch (e) {
-    console.error("Failed to fetch error info:", e);
-  }
-  return null;
-}
-
-import { calculateClientDuration } from "../../utils/timeUtils";
 
 export function ErrorLayout(props: ErrorLayoutProps) {
   const config = () => getErrorConfig(props.code);
-  const [errorInfo] = createResource(() => props.code, fetchErrorInfo);
+
+  // Reuse existing error data from store if it matches the current code to avoid double-fetching
+  const preFetched = () => {
+    const e = errorStore.error();
+    if (e && e.data && String(e.code) === String(props.code)) return e.data;
+    return null;
+  };
+
+  const [errorInfo] = createResource(() => props.code, async (code) => {
+    const p = preFetched();
+    if (p) return p;
+    return fetchErrorInfo(code);
+  }, {
+    initialValue: preFetched() || undefined
+  });
+
   const [showModal, setShowModal] = createSignal(false);
   const [clientDuration, setClientDuration] = createSignal<string | null>(null);
   const navigate = useNavigate();
@@ -52,18 +55,19 @@ export function ErrorLayout(props: ErrorLayoutProps) {
     }
   });
 
-  const processedErrorInfo = () => {
-    const info = errorInfo();
-    if (!info) return null;
-    const { details, ...rest } = info;
-    const processed: any = {
-      ...rest,
-      ...(details && typeof details === 'object' ? details : { details })
-    };
-    if (clientDuration()) {
-      processed["duration (client)"] = clientDuration();
-    }
-    return processed;
+  const extendedErrorInfo = () => {
+    const raw = errorInfo();
+    if (!raw) return null;
+    const data: any = { ...raw };
+    if (clientDuration()) data["duration (client)"] = clientDuration();
+    return data;
+  };
+
+  const columns = () => extendedErrorInfo() ? Object.keys(extendedErrorInfo()!) : [];
+
+  const columnTypes = {
+    timestamp: "TIMESTAMP",
+    start: "TIMESTAMP"
   };
 
   const bgIcons = [
@@ -89,8 +93,6 @@ export function ErrorLayout(props: ErrorLayoutProps) {
     { s: 1.6, x: '12%', y: '65%', r: 95 },
   ];
 
-  const columns = () => processedErrorInfo() ? Object.keys(processedErrorInfo()!) : [];
-
   return (
     <main
       class={`relative flex flex-col items-center justify-center min-h-[60vh] w-full px-6 sm:px-10 text-center py-4 overflow-hidden mx-auto transition-all duration-300 ${isWideMode() ? 'max-w-[98%]' : 'max-w-7xl'}`}
@@ -108,15 +110,7 @@ export function ErrorLayout(props: ErrorLayoutProps) {
           <div class="text-lg font-medium text-slate-500">Select an error code to preview</div>
         </div>
       }>
-        <Show when={!errorInfo.loading} fallback={
-          <div class="flex flex-col items-center gap-6 p-12 transition-all duration-300">
-            <LoadingAnimation icon="hourglass" />
-            <div class="flex flex-col items-center gap-1">
-              <div class="text-xl font-bold text-slate-900 dark:text-white">Simulating Error Request...</div>
-              <div class="text-sm text-slate-500 dark:text-slate-400 font-mono">CODE: {props.code}</div>
-            </div>
-          </div>
-        }>
+        <Show when={!errorInfo.loading}>
           {/* Scattered Background Icon Watermarks */}
           <div class="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
             <For each={bgIcons}>
@@ -218,31 +212,41 @@ export function ErrorLayout(props: ErrorLayoutProps) {
             <TextButton
               size="lg"
               class={`px-8 min-w-[180px] rounded-2xl border-0 shadow-lg bg-gradient-to-r from-primary-600 to-secondary-500 text-white shadow-primary-500/30`}
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (props.isGlobalModal) {
+                  import("../../stores/errorStore").then(m => m.errorStore.clearError());
+                } else {
+                  navigate(-1);
+                }
+              }}
               icon={<TbOutlineArrowLeft size={20} />}
             >
               Back
             </TextButton>
 
-            <TextButton
-              variant="outline"
-              size="lg"
-              class="px-8 min-w-[180px] rounded-2xl border-2 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-              onClick={() => setShowModal(true)}
-              icon={<TbOutlineTerminal size={20} />}
-            >
-              More Info
-            </TextButton>
+            <Show when={String(props.code) !== "404"}>
+              <TextButton
+                variant="outline"
+                size="lg"
+                class="px-8 min-w-[180px] rounded-2xl border-2 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                onClick={() => setShowModal(true)}
+                icon={<TbOutlineTerminal size={20} />}
+              >
+                More Info
+              </TextButton>
+            </Show>
           </Motion.div>
 
           <DataModal
-            data={showModal() ? (processedErrorInfo() ?? {
+            data={showModal() ? (extendedErrorInfo() || {
               status: ApiStatus.ERROR,
-              message: 'No extra information available at this time.',
-              code: props.code,
-              requestId: 'N/A'
+              message: 'Detailed metadata synchronization unavailable.',
+              code: String(props.code),
+              trace_id: 'N/A',
+              timestamp: new Date().toISOString()
             }) : null}
             columns={columns()}
+            columnTypes={columnTypes}
             title="Application Error Details"
             icon={<TbOutlineTerminal size={20} class="text-red-600 dark:text-red-400" />}
             onClose={() => setShowModal(false)}

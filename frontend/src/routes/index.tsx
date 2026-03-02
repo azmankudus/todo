@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { TbOutlineSquareCheck, TbOutlineDatabase, TbOutlineArrowRight, TbOutlineSun } from "solid-icons/tb";
+import { TbOutlineSquareCheck, TbOutlineDatabase, TbOutlineRocket, TbOutlineSun } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
 import { TextButton } from "../components/ui/TextButton";
 
@@ -29,7 +29,7 @@ export default function Home() {
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <A href="/todo">
-            <TextButton size="lg" class="px-8 shadow-lg shadow-primary-500/30 bg-gradient-to-r from-primary-600 to-secondary-500 border-0" icon={<TbOutlineArrowRight size={20} />}>
+            <TextButton size="lg" class="px-8 shadow-lg shadow-primary-500/30 bg-gradient-to-r from-primary-600 to-secondary-500 border-0" icon={<TbOutlineRocket size={20} />}>
               Get Started
             </TextButton>
           </A>

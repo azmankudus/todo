@@ -1,24 +1,18 @@
 import { getAuthHeaders } from "../stores/authBase";
+import { handleGlobalError } from "../stores/errorStore";
+import { ApiResponse } from "../domain/shared/ApiResponse";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
-export interface ApiResponse<T = any> {
-  timestamp: string;
-  http_status: string;
-  trace_id: string;
-  status: "SUCCESS" | "WARNING" | "ERROR";
-  code: string;
-  message: string;
-  details: T;
-  duration: string;
-  start?: string;
-}
+export type { ApiResponse };
 
 export async function apiClient<T = any>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit & { skipGlobalError?: boolean } = {}
 ): Promise<ApiResponse<T>> {
+  const { skipGlobalError, ...fetchOptions } = options;
   const url = path.startsWith("http") ? path : `${BASE_URL}${path}`;
+  const start = new Date().toISOString();
 
   const headers = new Headers(options.headers);
   if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
@@ -50,12 +44,20 @@ export async function apiClient<T = any>(
       status: response.ok ? "SUCCESS" : "ERROR",
       message: text || response.statusText,
       http_status: `${response.status} ${response.statusText}`,
+      code: response.status.toString(),
       details: {}
     };
   }
 
-  if (!response.ok && !data.status) {
-    data.status = "ERROR";
+  if (!response.ok) {
+    if (!data.status) data.status = "ERROR";
+    if (!data.code) data.code = response.status.toString();
+    if (!data.start) data.start = start;
+
+    // Globally handle 4xx/5xx errors
+    if (!skipGlobalError) {
+      handleGlobalError(data);
+    }
   }
 
   return data as ApiResponse<T>;

@@ -51,21 +51,24 @@ export function DataModal(props: DataModalProps) {
   createEffect(() => {
     if (props.data) {
       document.body.style.overflow = 'hidden';
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") props.onClose();
+      };
+      window.addEventListener("keydown", handleEscape);
+      onCleanup(() => {
+        window.removeEventListener("keydown", handleEscape);
+        document.body.style.overflow = '';
+      });
     } else {
       document.body.style.overflow = '';
     }
-  });
-
-  onCleanup(() => {
-    document.body.style.overflow = '';
   });
 
   return (
     <Show when={props.data}>
       <Portal>
         <div
-          class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget) props.onClose(); }}
+          class="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm"
         >
           <Motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
