@@ -92,7 +92,7 @@ export default function SqlPage() {
   ));
 
   return (
-    <main class={`mx-auto px-4 py-12 transition-all duration-300 w-full ${isWideMode() ? 'max-w-[95%]' : 'max-w-5xl'}`}>
+    <main class={`mx-auto px-4 py-6 transition-all duration-300 w-full ${isWideMode() ? 'max-w-[95%]' : 'max-w-5xl'}`}>
       <Motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

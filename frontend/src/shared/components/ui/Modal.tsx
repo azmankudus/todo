@@ -39,15 +39,19 @@ export function Modal(props: ModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3 }}
             class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) props.onClose();
+            }}
           >
             <Motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.3, easing: [0.22, 1, 0.36, 1] }}
               class={`bg-white dark:bg-slate-900 w-full ${props.maxWidth || "max-w-lg"} ${props.class || ""} rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col`}
+              onClick={(e) => e.stopPropagation()}
             >
               <div class="bg-gradient-to-r from-primary-600 to-secondary-500 py-5 px-6 text-center relative">
                 <div class="flex items-center justify-center gap-2">

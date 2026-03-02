@@ -20,9 +20,17 @@ export const errorStore = {
 };
 
 export function handleGlobalError(response: ApiResponse) {
-  if (response.status === "ERROR" || (Number(response.code) >= 400)) {
+  // Extract HTTP status code from http_status string (e.g., "500 Internal Server Error")
+  // Fallback to the code property if missing
+  const httpCodeMatch = response.http_status?.match(/^(\d+)/);
+  const code = httpCodeMatch ? httpCodeMatch[1] : (response.code || "500");
+
+  // We consider it an error if status is ERROR or if the HTTP code is 4xx/5xx
+  const isError = response.status === "ERROR" || (Number(code) >= 400);
+
+  if (isError) {
     errorStore.setError({
-      code: response.code || "500",
+      code: code,
       message: response.message || "An unexpected error occurred",
       details: response.details,
       data: response

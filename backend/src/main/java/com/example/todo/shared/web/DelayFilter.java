@@ -15,21 +15,26 @@ import io.micronaut.core.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.Duration;
+import java.util.List;
+
 import reactor.core.publisher.Mono;
 
 @Filter("/**")
-@Requires(property = "application.delay.enabled", value = "true", defaultValue = "false")
+@Requires(property = "application.test.delay.enabled", value = "true", defaultValue = "false")
 @ExecuteOn(TaskExecutors.IO)
 public class DelayFilter implements HttpServerFilter {
 
   private static final Logger logger = LoggerFactory.getLogger(DelayFilter.class.getName());
 
   private final long delayDuration;
+  private final List<String> apiPaths;
   private final String contextPath;
 
-  public DelayFilter(@Property(name = "application.delay.duration") @Nullable Long delayDuration,
+  public DelayFilter(@Property(name = "application.test.delay.duration") @Nullable Long delayDuration,
+      @Property(name = "application.test.delay.api") @Nullable List<String> apiPaths,
       @Value("${micronaut.server.context-path:/}") String contextPath) {
     this.delayDuration = delayDuration != null ? delayDuration : 3L;
+    this.apiPaths = apiPaths != null ? apiPaths : List.of();
     this.contextPath = contextPath;
     logger.info("Delay filter enabled with duration: {}ms", this.delayDuration);
   }
@@ -37,9 +42,11 @@ public class DelayFilter implements HttpServerFilter {
   @Override
   public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
     String path = request.getPath();
-    String apiPathPrefix = contextPath.endsWith("/") ? contextPath + "api" : contextPath + "/api";
+    boolean match = apiPaths.stream().anyMatch(apiPath -> path.startsWith(contextPath + apiPath));
 
-    if (!path.startsWith(apiPathPrefix)) {
+    logger.debug("Delay filter intercepting request: {}", path);
+
+    if (!match) {
       return chain.proceed(request);
     }
 

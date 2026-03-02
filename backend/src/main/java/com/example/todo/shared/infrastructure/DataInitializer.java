@@ -13,6 +13,7 @@ import com.example.todo.modules.todo.domain.repository.TodoRepository;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.context.event.StartupEvent;
 import jakarta.inject.Singleton;
@@ -28,11 +29,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Singleton
-@Requires(property = "data-initialization.enabled", value = "true", defaultValue = "true")
+@Requires(property = "application.data.init.enabled", value = "true", defaultValue = "true")
 public class DataInitializer implements ApplicationEventListener<StartupEvent> {
 
   private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class.getName());
 
+  private final boolean sampleDataEnabled;
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final PermissionRepository permissionRepository;
@@ -42,11 +44,13 @@ public class DataInitializer implements ApplicationEventListener<StartupEvent> {
       UserRepository userRepository,
       RoleRepository roleRepository,
       PermissionRepository permissionRepository,
-      TodoRepository todoRepository) {
+      TodoRepository todoRepository,
+      @Value("application.data.init.sample.enabled") boolean sampleDataEnabled) {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.permissionRepository = permissionRepository;
     this.todoRepository = todoRepository;
+    this.sampleDataEnabled = sampleDataEnabled;
   }
 
   @Override
@@ -56,7 +60,9 @@ public class DataInitializer implements ApplicationEventListener<StartupEvent> {
 
     initializeRBAC();
     initializeUsers();
-    initializeTodos();
+    if (sampleDataEnabled) {
+      initializeTodos();
+    }
 
     logger.info("Combined data initialization completed");
   }
