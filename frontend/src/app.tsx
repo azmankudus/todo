@@ -3,13 +3,14 @@ import { FileRoutes } from "@solidjs/start/router";
 import { Suspense, createSignal, createEffect, onCleanup, onMount, Show, For } from "solid-js";
 import { Dynamic, Portal } from "solid-js/web";
 import { Motion, Presence } from "solid-motionone";
-import { Navigation } from "./components/ui/Navigation";
-import { backgrounds } from "./components/ui/Backgrounds";
-import { LoadingAnimation } from "./components/ui/LoadingAnimation";
-import { loadingState, showLoading, hideLoading } from "./stores/loadingStore";
-import { GlobalErrorModal } from "./components/ui/GlobalErrorModal";
+import { Navigation } from "./shared/components/ui/Navigation";
+import { backgrounds } from "./shared/components/ui/Backgrounds";
+import { LoadingAnimation } from "./shared/components/ui/LoadingAnimation";
+import { loadingState, showLoading, hideLoading } from "./shared/stores/loadingStore";
+import { GlobalErrorModal } from "./shared/components/ui/GlobalErrorModal";
 import { CONFIG, getStorageKey } from "./config";
-import { initializeAuth, user, isAuthenticated } from "./stores/authStore";
+import { RESOURCES } from "./config/resources";
+import { initializeAuth, user, isAuthenticated } from "./shared/stores/authStore";
 import "./app.css";
 
 export default function App() {
@@ -70,12 +71,12 @@ export default function App() {
   };
 
   const navItems = () => [
-    { href: "/", label: "Home" },
+    { href: "/", label: RESOURCES.NAV.HOME },
     ...((!CONFIG.securityEnabled || isAuthenticated()) ? [
-      { href: "/todo", label: "Tasks" },
-      { href: "/sql", label: "SQL" }
+      { href: "/todo", label: RESOURCES.NAV.TASKS },
+      { href: "/sql", label: RESOURCES.NAV.SQL }
     ] : []),
-    { href: "/error", label: "Error" }
+    { href: "/error", label: RESOURCES.NAV.ERROR }
   ];
 
   return (
@@ -89,7 +90,7 @@ export default function App() {
 
         createEffect(() => {
           if (isRouting()) {
-            showLoading("hourglass", "Preparing...", "routing");
+            showLoading("hourglass", RESOURCES.COMMON.PREPARING, "routing");
             safetyTimer = setTimeout(() => hideLoading("routing"), 8000);
           } else {
             clearTimeout(safetyTimer);
@@ -115,12 +116,12 @@ export default function App() {
               backgroundTheme={backgroundTheme()}
               onChangeBackgroundTheme={changeBackgroundTheme}
               onRefreshRoute={refreshRoute}
-              brand="Todo"
+              brand={RESOURCES.COMMON.LOGO_BRAND}
               user={user()}
             />
             <Suspense fallback={
               <div class="flex items-center justify-center p-12 grow">
-                <div class="animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-primary-600 rounded-full" role="status" aria-label="loading"></div>
+                <div class="animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-primary-600 rounded-full" role="status" aria-label={RESOURCES.COMMON.LOADING}></div>
               </div>
             }>
               <main class="w-full relative grow flex flex-col">
@@ -176,7 +177,7 @@ function ScrollToTop() {
           press={{ scale: 0.9 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           class="fixed bottom-8 right-8 z-[60] p-4 rounded-2xl bg-primary-600 text-white shadow-2xl shadow-primary-500/40 hover:bg-primary-500 transition-colors flex items-center justify-center"
-          aria-label="Scroll to top"
+          aria-label={RESOURCES.COMMON.SCROLL_TO_TOP}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6" /></svg>
         </Motion.button>

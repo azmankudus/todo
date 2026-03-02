@@ -1,6 +1,7 @@
 import { useNavigate } from "@solidjs/router";
 import { onMount } from "solid-js";
-import { errorStore } from "../stores/errorStore";
+import { errorStore } from "../shared/stores/errorStore";
+import { RESOURCES } from "../config/resources";
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ export default function NotFound() {
   onMount(() => {
     errorStore.setError({
       code: "404",
-      message: "The page you're looking for doesn't exist."
+      message: RESOURCES.ERROR_PAGE.NOT_FOUND
     });
     navigate("/", { replace: true });
   });

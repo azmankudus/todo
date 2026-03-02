@@ -1,15 +1,15 @@
 package com.example.todo.shared.infrastructure;
 
-import com.example.todo.auth.domain.model.Permission;
-import com.example.todo.auth.domain.model.Role;
-import com.example.todo.auth.domain.model.User;
-import com.example.todo.auth.domain.repository.PermissionRepository;
-import com.example.todo.auth.domain.repository.RoleRepository;
-import com.example.todo.auth.domain.repository.UserRepository;
-import com.example.todo.auth.domain.model.RolePermission;
-import com.example.todo.auth.domain.model.UserRole;
-import com.example.todo.todo.domain.model.Todo;
-import com.example.todo.todo.domain.repository.TodoRepository;
+import com.example.todo.modules.auth.domain.model.Permission;
+import com.example.todo.modules.auth.domain.model.Role;
+import com.example.todo.modules.auth.domain.model.User;
+import com.example.todo.modules.auth.domain.repository.PermissionRepository;
+import com.example.todo.modules.auth.domain.repository.RoleRepository;
+import com.example.todo.modules.auth.domain.repository.UserRepository;
+import com.example.todo.modules.auth.domain.model.RolePermission;
+import com.example.todo.modules.auth.domain.model.UserRole;
+import com.example.todo.modules.todo.domain.model.Todo;
+import com.example.todo.modules.todo.domain.repository.TodoRepository;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import io.micronaut.context.annotation.Requires;

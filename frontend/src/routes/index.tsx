@@ -1,7 +1,8 @@
 import { A } from "@solidjs/router";
 import { TbOutlineSquareCheck, TbOutlineDatabase, TbOutlineRocket, TbOutlineSun } from "solid-icons/tb";
 import { Motion } from "solid-motionone";
-import { TextButton } from "../components/ui/TextButton";
+import { TextButton } from "../shared/components/ui/TextButton";
+import { RESOURCES } from "../config/resources";
 
 export default function Home() {
   return (
@@ -20,22 +21,21 @@ export default function Home() {
           <TbOutlineSquareCheck size={48} />
         </Motion.div>
         <h1 class="text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-6 transition-colors">
-          Organize your life with <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-400 dark:to-secondary-400 transition-all">Todo Vibe</span>
+          {RESOURCES.HOME.HERO_TITLE} <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-400 dark:to-secondary-400 transition-all whitespace-nowrap">{RESOURCES.COMMON.LOGO_BRAND}</span>
         </h1>
         <p class="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 transition-colors">
-          A premium task management experience built with Micronaut, DuckDB, and SolidJS.
-          Track your goals, explore your data, and stay in the flow.
+          {RESOURCES.HOME.HERO_SUBTITLE}
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <A href="/todo">
             <TextButton size="lg" class="px-8 shadow-lg shadow-primary-500/30 bg-gradient-to-r from-primary-600 to-secondary-500 border-0" icon={<TbOutlineRocket size={20} />}>
-              Get Started
+              {RESOURCES.HOME.GET_STARTED}
             </TextButton>
           </A>
           <A href="/sql">
             <TextButton variant="outline" size="lg" class="px-8 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" icon={<TbOutlineDatabase size={20} />}>
-              SQL Explorer
+              {RESOURCES.NAV.SQL}
             </TextButton>
           </A>
         </div>
@@ -43,9 +43,9 @@ export default function Home() {
 
       <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { icon: TbOutlineSquareCheck, title: "Task Management", desc: "Streamlined interface for creating and managing your daily tasks with ease.", bgFrom: "from-primary-600", bgTo: "to-secondary-500", shadow: "shadow-primary-500/20" },
-          { icon: TbOutlineSun, title: "Adaptive Theme", desc: "Seamlessly switch between Light and Dark modes to suit your work environment.", bgFrom: "from-pink-500", bgTo: "to-rose-400", shadow: "shadow-pink-500/20" },
-          { icon: TbOutlineDatabase, title: "SQL Power", desc: "Advanced users can query the underlying DuckDB database directly using raw SQL.", bgFrom: "from-emerald-500", bgTo: "to-secondary-400", shadow: "shadow-emerald-500/20" }
+          { icon: TbOutlineSquareCheck, title: RESOURCES.HOME.FEAT_TASK_TITLE, desc: RESOURCES.HOME.FEAT_TASK_DESC, bgFrom: "from-primary-600", bgTo: "to-secondary-500", shadow: "shadow-primary-500/20" },
+          { icon: TbOutlineSun, title: RESOURCES.HOME.FEAT_THEME_TITLE, desc: RESOURCES.HOME.FEAT_THEME_DESC, bgFrom: "from-pink-500", bgTo: "to-rose-400", shadow: "shadow-pink-500/20" },
+          { icon: TbOutlineDatabase, title: RESOURCES.HOME.FEAT_SQL_TITLE, desc: RESOURCES.HOME.FEAT_SQL_DESC, bgFrom: "from-emerald-500", bgTo: "to-secondary-400", shadow: "shadow-emerald-500/20" }
         ].map((feature, i) => (
           <Motion.div
             initial={{ opacity: 0, y: 30 }}
